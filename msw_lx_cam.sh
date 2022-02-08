@@ -1,3 +1,3 @@
 #!/usr/bin/sh
 
-pm2 start msw_devtool_test.js
+pm2 start msw_lx_cam.js
