@@ -69,7 +69,7 @@ def msw_mqtt_connect():
     lib_mqtt_client.on_subscribe = on_subscribe
     lib_mqtt_client.on_message = on_message
     lib_mqtt_client.connect(broker_ip, port)
-    lib_mqtt_client.loop_start()
+    lib_mqtt_client.loop_forever()
 
     return lib_mqtt_client
 
