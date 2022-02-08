@@ -126,6 +126,8 @@ def main():
     global port
     global lib
     global my_lib_name
+    global cap_event
+    global CONTROL_E
 
     my_msw_name = 'msw' + my_lib_name[3:] + '_' + 'msw' + my_lib_name[3:]
 
