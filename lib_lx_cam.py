@@ -118,7 +118,6 @@ def send_status():
     global camera_status
 
     while True:
-        print(cap_event & CONTROL_E)
         if not (cap_event & CONTROL_E):
             if camera_status != 'camera connection error':
                 camera_status = 'ready'
