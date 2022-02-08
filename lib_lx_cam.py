@@ -28,12 +28,18 @@ data_topic = ''
 broker_ip = 'localhost'
 port = 1883
 
+cap_event = 0x00
+
+CONTROL_E = 0x01
+
 lib = dict()
 
 
 def on_connect(client, userdata, flags, rc):
     global control_topic
     global broker_ip
+    global cap_event
+    global CONTROL_E
 
     print('[msw_mqtt_connect] connect to ', broker_ip)
     lib_mqtt_client.subscribe(control_topic, 0)
@@ -54,8 +60,7 @@ def on_message(client, userdata, msg):
 
     message = str(msg.payload.decode("utf-8")).lower()
     if message == 'g':
-        print('receive capture message')
-        action()
+        cap_event |= CONTROL_E
 
 
 def msw_mqtt_connect():
@@ -154,9 +159,11 @@ def main():
     ftp.connect("203.253.128.177", 50023)
     ftp.login("d_keti", "keti123")
 
-    t = threading.Thread(target=send_alive, )
-    t.start()
-
+    while True:
+        if cap_event & CONTROL_E:
+            cap_event &= (~CONTROL_E)
+            lib_mqtt_client.publish(data_topic, 'captured')
+            action()
     # ftp.close
     # camera.exit()
 
