@@ -93,6 +93,7 @@ def action():
 
     file_name = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)).strftime(
         '%Y-%m-%dT%H:%M:%S.%f')
+    target = os.path.join('./', file_name + '.jpg')
 
     logging.basicConfig(
         format='%(levelname)s: %(name)s: %(message)s', level=logging.WARNING)
@@ -101,8 +102,6 @@ def action():
     try:
         camera.init()
         file_path = camera.capture(gp.GP_CAPTURE_IMAGE)
-        target = os.path.join('/home/pi/nCube-MUV/' + my_msw_name + '/', file_name + '.jpg')
-        target = os.path.join('./', file_name + '.jpg')
         camera_file = camera.file_get(
             file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
         camera_file.save(target)
