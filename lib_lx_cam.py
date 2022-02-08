@@ -96,6 +96,7 @@ def action():
     camera_file = camera.file_get(
         file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
     camera_file.save(target)
+    camera.exit()
 
     sending_file = open(target, 'rb')
     ftp.storbinary('STOR ' + '/Downloads/ftp_test/' + target, sending_file)
