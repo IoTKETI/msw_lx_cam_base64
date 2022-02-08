@@ -7,6 +7,7 @@ import datetime
 import json
 import sys
 import os
+import threading
 import paho.mqtt.client as mqtt
 
 import gphoto2 as gp
@@ -51,8 +52,8 @@ def on_message(client, userdata, msg):
 
     message = str(msg.payload.decode("utf-8")).lower()
     if message == 'g':
-        print('receive OFF')
-        control_msg = False
+        print('receive capture message')
+        action()
 
 
 def msw_mqtt_connect():
@@ -69,7 +70,7 @@ def msw_mqtt_connect():
     lib_mqtt_client.on_subscribe = on_subscribe
     lib_mqtt_client.on_message = on_message
     lib_mqtt_client.connect(broker_ip, port)
-    lib_mqtt_client.loop_forever()
+    lib_mqtt_client.loop_start()
 
     return lib_mqtt_client
 
@@ -94,12 +95,17 @@ def action():
         file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
     camera_file.save(target)
 
-    target = action()
     sending_file = open(target, 'rb')
     ftp.storbinary('STOR ' + '/Downloads/ftp_test/' + target, sending_file)
     sending_file.close()
 
     return target
+
+
+def send_alive():
+    global data_topic
+
+    lib_mqtt_client.publish(data_topic, 'captured')
 
 
 def main():
@@ -143,7 +149,10 @@ def main():
     ftp = ftplib.FTP()
     ftp.connect("203.253.128.177", 50023)
     ftp.login("d_keti", "keti123")
-    #
+
+    t = threading.Thread(target=missionPortOpening, )
+    t.start()
+
     # ftp.close
     # camera.exit()
 
