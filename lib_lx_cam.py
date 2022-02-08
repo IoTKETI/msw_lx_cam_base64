@@ -12,7 +12,7 @@ import time
 
 import paho.mqtt.client as mqtt
 
-# import gphoto2 as gp
+import gphoto2 as gp
 
 import ftplib
 
@@ -29,8 +29,9 @@ broker_ip = 'localhost'
 port = 1883
 
 cap_event = 0x00
-
 CONTROL_E = 0x01
+
+my_msw_name = ''
 
 lib = dict()
 
@@ -88,6 +89,7 @@ def msw_mqtt_connect():
 def action():
     global camera
     global ftp
+    global my_msw_name
 
     file_name = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)).strftime('%Y-%m-%dT%H:%M:%S.%f')
 
@@ -95,18 +97,12 @@ def action():
         format='%(levelname)s: %(name)s: %(message)s', level=logging.WARNING)
     camera = gp.Camera()
     camera.init()
-    print('Capturing image')
     file_path = camera.capture(gp.GP_CAPTURE_IMAGE)
-    print('Camera file path: {0}/{1}'.format(file_path.folder, file_path.name))
+    target = os.path.join('/home/pi/nCube-MUV/' + my_msw_name + '/', file_name + '.jpg')
     target = os.path.join('./', file_name + '.jpg')
-    print('Copying image to', target)
     camera_file = camera.file_get(
         file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
     camera_file.save(target)
-
-    sending_file = open(target, 'rb')
-    ftp.storbinary('STOR ' + '/Downloads/ftp_test/' + target, sending_file)
-    sending_file.close()
 
     return target
 
@@ -122,6 +118,7 @@ def main():
     global my_lib_name
     global cap_event
     global CONTROL_E
+    global my_msw_name
 
     my_msw_name = 'msw' + my_lib_name[3:] + '_' + 'msw' + my_lib_name[3:]
 
@@ -159,7 +156,17 @@ def main():
         if cap_event & CONTROL_E:
             cap_event &= (~CONTROL_E)
             lib_mqtt_client.publish(data_topic, 'captured')
-            action()
+            
+            target = action()
+            
+            sending_file = open(target, 'rb')
+            ftp.storbinary('STOR ' + '/Downloads/ftp_test/' + target, sending_file)
+            sending_file.close()
+            ftp.close
+            camera.exit()
+        else:
+            lib_mqtt_client.publish(data_topic, 'ready')
+        time.sleep(1)
     # ftp.close
     # camera.exit()
 
