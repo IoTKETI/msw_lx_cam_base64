@@ -176,7 +176,10 @@ def main():
         if cap_event & CONTROL_E:
             cap_event &= (~CONTROL_E)
             target = action()
-            if camera_status != 'camera connection error':
+            print(camera_status)
+            print('camera connection error')
+            if camera_status != "camera connection error":
+                print(camera_status)
                 lib_mqtt_client.publish(data_topic, 'captured')
 
                 sending_file = open(target, 'rb')
