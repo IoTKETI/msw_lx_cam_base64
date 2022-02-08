@@ -163,7 +163,6 @@ def main():
     t.start()
 
     while True:
-        print('main')
         if cap_event & CONTROL_E:
             cap_event &= (~CONTROL_E)
             lib_mqtt_client.publish(data_topic, 'captured')
