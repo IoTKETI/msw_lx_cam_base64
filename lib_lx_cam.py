@@ -66,10 +66,6 @@ def on_message(client, userdata, msg):
         cap_event |= CONTROL_E
 
 
-def on_publish(client, userdata, mid):
-    print("In on_pub callback mid= ", mid)
-
-
 def msw_mqtt_connect():
     global lib_mqtt_client
     global broker_ip
@@ -91,7 +87,8 @@ def action():
     global ftp
     global my_msw_name
 
-    file_name = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)).strftime('%Y-%m-%dT%H:%M:%S.%f')
+    file_name = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)).strftime(
+        '%Y-%m-%dT%H:%M:%S.%f')
 
     logging.basicConfig(
         format='%(levelname)s: %(name)s: %(message)s', level=logging.WARNING)
@@ -105,6 +102,16 @@ def action():
     camera_file.save(target)
 
     return target
+
+
+def send_status():
+    global lib_mqtt_client
+
+    while True:
+        print(cap_event & CONTROL_E)
+        if not (cap_event & CONTROL_E):
+            lib_mqtt_client.publish(data_topic, 'ready')
+        time.sleep(1)
 
 
 def main():
@@ -152,25 +159,22 @@ def main():
     ftp.connect("203.253.128.177", 50023)
     ftp.login("d_keti", "keti123")
 
+    t = threading.Thread(target=send_status, )
+    t.start()
+
     while True:
+        print('main')
         if cap_event & CONTROL_E:
             cap_event &= (~CONTROL_E)
             lib_mqtt_client.publish(data_topic, 'captured')
-            
+
             target = action()
-            
+
             sending_file = open(target, 'rb')
             ftp.storbinary('STOR ' + '/Downloads/ftp_test/' + target, sending_file)
             sending_file.close()
             ftp.close
             camera.exit()
-        else:
-            lib_mqtt_client.publish(data_topic, 'ready')
-        time.sleep(1)
-    # ftp.close
-    # camera.exit()
-
-    # return 0
 
 
 if __name__ == "__main__":
