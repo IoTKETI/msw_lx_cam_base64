@@ -246,19 +246,19 @@ function local_msw_mqtt_connect(broker_ip, port) {
 }
 
 function on_receive_from_muv(topic, str_message) {
-    console.log('[' + topic + '] ' + str_message);
+    // console.log('[' + topic + '] ' + str_message);
 
     parseControlMission(topic, str_message);
 }
 
 function on_receive_from_lib(topic, str_message) {
-    console.log('[' + topic + '] ' + str_message + '\n');
+    // console.log('[' + topic + '] ' + str_message + '\n');
 
     parseDataMission(topic, str_message);
 }
 
 function on_process_fc_data(topic, str_message) {
-    console.log('[' + topic + '] ' + str_message + '\n');
+    // console.log('[' + topic + '] ' + str_message + '\n');
 
     let topic_arr = topic.split('/');
     try {
