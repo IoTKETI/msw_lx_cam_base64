@@ -177,14 +177,14 @@ def main():
     while True:
         if cap_event & CONTROL_E:
             cap_event &= (~CONTROL_E)
-            lib_mqtt_client.publish(data_topic, 'captured')
-
             target = action()
+            if camera_status != 'camera connection error':
+                lib_mqtt_client.publish(data_topic, 'captured')
 
-            sending_file = open(target, 'rb')
-            ftp.storbinary('STOR ' + '/Downloads/ftp_test/' + target, sending_file)
-            sending_file.close()
-            ftp.close
+                sending_file = open(target, 'rb')
+                ftp.storbinary('STOR ' + '/Downloads/ftp_test/' + target, sending_file)
+                sending_file.close()
+                ftp.close
             camera.exit()
 
 
