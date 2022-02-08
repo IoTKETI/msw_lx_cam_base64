@@ -111,7 +111,7 @@ def send_status():
         print(cap_event & CONTROL_E)
         if not (cap_event & CONTROL_E):
             lib_mqtt_client.publish(data_topic, 'ready')
-        time.sleep(1)
+        time.sleep(2)
 
 
 def main():
