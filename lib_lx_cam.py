@@ -57,6 +57,8 @@ def on_subscribe(client, userdata, mid, granted_qos):
 def on_message(client, userdata, msg):
     global data_topic
     global control_topic
+    global cap_event
+    global CONTROL_E
 
     message = str(msg.payload.decode("utf-8")).lower()
     if message == 'g':
