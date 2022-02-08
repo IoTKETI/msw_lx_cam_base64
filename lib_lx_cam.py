@@ -8,6 +8,8 @@ import json
 import sys
 import os
 import threading
+import time
+
 import paho.mqtt.client as mqtt
 
 import gphoto2 as gp
@@ -105,7 +107,9 @@ def action():
 def send_alive():
     global data_topic
 
-    lib_mqtt_client.publish(data_topic, 'captured')
+    while True:
+        lib_mqtt_client.publish(data_topic, 'captured')
+        time.sleep(1)
 
 
 def main():
