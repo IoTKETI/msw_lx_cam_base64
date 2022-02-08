@@ -150,7 +150,7 @@ def main():
     ftp.connect("203.253.128.177", 50023)
     ftp.login("d_keti", "keti123")
 
-    t = threading.Thread(target=missionPortOpening, )
+    t = threading.Thread(target=send_alive, )
     t.start()
 
     # ftp.close
