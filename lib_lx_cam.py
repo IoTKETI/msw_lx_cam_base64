@@ -32,6 +32,7 @@ cap_event = 0x00
 CONTROL_E = 0x01
 
 my_msw_name = ''
+camera_status = 'init'
 
 lib = dict()
 
@@ -86,6 +87,9 @@ def action():
     global camera
     global ftp
     global my_msw_name
+    global lib_mqtt_client
+    global data_topic
+    global camera_status
 
     file_name = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)).strftime(
         '%Y-%m-%dT%H:%M:%S.%f')
@@ -103,19 +107,24 @@ def action():
             file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
         camera_file.save(target)
     except Exception as e:
+        camera_status = 'camera connection error'
         lib_mqtt_client.publish(data_topic, 'camera connection error')
         action()
+
     return target
 
 
 def send_status():
     global lib_mqtt_client
+    global camera_status
 
     while True:
         print(cap_event & CONTROL_E)
         if not (cap_event & CONTROL_E):
-            lib_mqtt_client.publish(data_topic, 'ready')
-        time.sleep(2)
+            if camera_status != 'camera connection error':
+                camera_status = 'ready'
+            lib_mqtt_client.publish(data_topic, camera_status)
+        time.sleep(1)
 
 
 def main():
