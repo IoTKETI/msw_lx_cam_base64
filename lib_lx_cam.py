@@ -92,15 +92,19 @@ def action():
 
     logging.basicConfig(
         format='%(levelname)s: %(name)s: %(message)s', level=logging.WARNING)
+    callback_obj = gp.check_result(gp.use_python_logging())
     camera = gp.Camera()
-    camera.init()
-    file_path = camera.capture(gp.GP_CAPTURE_IMAGE)
-    target = os.path.join('/home/pi/nCube-MUV/' + my_msw_name + '/', file_name + '.jpg')
-    target = os.path.join('./', file_name + '.jpg')
-    camera_file = camera.file_get(
-        file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
-    camera_file.save(target)
-
+    try:
+        camera.init()
+        file_path = camera.capture(gp.GP_CAPTURE_IMAGE)
+        target = os.path.join('/home/pi/nCube-MUV/' + my_msw_name + '/', file_name + '.jpg')
+        target = os.path.join('./', file_name + '.jpg')
+        camera_file = camera.file_get(
+            file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
+        camera_file.save(target)
+    except Exception as e:
+        lib_mqtt_client.publish(data_topic, 'camera connection error')
+        action()
     return target
 
 
