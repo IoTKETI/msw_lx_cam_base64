@@ -12,7 +12,7 @@ import time
 
 import paho.mqtt.client as mqtt
 
-import gphoto2 as gp
+# import gphoto2 as gp
 
 import ftplib
 
@@ -65,13 +65,14 @@ def on_message(client, userdata, msg):
         cap_event |= CONTROL_E
 
 
+def on_publish(client, userdata, mid):
+    print("In on_pub callback mid= ", mid)
+
+
 def msw_mqtt_connect():
-    global lib_topic
     global lib_mqtt_client
     global broker_ip
     global port
-
-    lib_topic = ''
 
     lib_mqtt_client = mqtt.Client()
     lib_mqtt_client.on_connect = on_connect
@@ -92,7 +93,6 @@ def action():
 
     logging.basicConfig(
         format='%(levelname)s: %(name)s: %(message)s', level=logging.WARNING)
-    callback_obj = gp.check_result(gp.use_python_logging())
     camera = gp.Camera()
     camera.init()
     print('Capturing image')
@@ -111,14 +111,6 @@ def action():
     return target
 
 
-def send_alive():
-    global data_topic
-
-    while True:
-        lib_mqtt_client.publish(data_topic, 'captured')
-        time.sleep(1)
-
-
 def main():
     global camera
     global lib_mqtt_client
@@ -135,7 +127,7 @@ def main():
 
     try:
         lib = dict()
-        with open('./' + my_lib_name + '.json', 'r') as f:
+        with open('./' + my_msw_name + '/' + my_lib_name + '.json', 'r') as f:
             lib = json.load(f)
             lib = json.loads(lib)
 
@@ -150,6 +142,7 @@ def main():
         lib = json.dumps(lib, indent=4)
         lib = json.loads(lib)
 
+        # with open('./' + my_msw_name + '/' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
         with open('./' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
             json.dump(lib, json_file, indent=4)
 
