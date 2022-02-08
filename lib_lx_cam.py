@@ -109,7 +109,6 @@ def action():
     except Exception as e:
         camera_status = 'camera connection error'
         lib_mqtt_client.publish(data_topic, 'camera connection error')
-        action()
 
     return target
 
