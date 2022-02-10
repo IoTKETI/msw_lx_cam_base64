@@ -113,6 +113,7 @@ function runLib(obj_lib) {
 
         } else {
             scripts_arr[0] = scripts_arr[0].replace('./', '');
+            scripts_arr[0] = './' + scripts_arr[0];
         }
 
         // let run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
@@ -179,7 +180,7 @@ function msw_mqtt_connect(broker_ip, port) {
 
                     let cinObj = jsonObj.pc['m2m:sgn'].nev.rep['m2m:cin']
                     let patharr = jsonObj.pc['m2m:sgn'].sur.split('/');
-                    let lib_ctl_topic = '/MUV/control/' + patharr[patharr.length - 2].replace('msw_', 'lib_') + '/' + patharr[patharr.length - 1];
+                    let lib_ctl_topic = '/MUV/control/' + patharr[patharr.length - 3].replace('msw_', 'lib_') + '/' + patharr[patharr.length - 2];
 
                     if (getType(cinObj.con) == 'string') {
                         local_msw_mqtt_client.publish(lib_ctl_topic, cinObj.con);
@@ -284,17 +285,18 @@ setTimeout(init, 1000);
 ///////////////////////////////////////////////////////////////////////////////
 function parseDataMission(topic, str_message) {
     try {
-        let obj_lib_data = JSON.parse(str_message);
-        if (fc.hasOwnProperty('global_position_int')) {
-            Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
-        }
-        str_message = JSON.stringify(obj_lib_data);
+        // let obj_lib_data = JSON.parse(str_message);
+        // if (fc.hasOwnProperty('global_position_int')) {
+        //     Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
+        // }
+        // str_message = JSON.stringify(obj_lib_data);
 
         let topic_arr = topic.split('/');
         let data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + topic_arr[topic_arr.length - 1];
         msw_mqtt_client.publish(data_topic, str_message);
         sh_man.crtci(data_topic + '?rcn=0', 0, str_message, null, function (rsc, res_body, parent, socket) {
-        });    } catch (e) {
+        });
+    } catch (e) {
         console.log('[parseDataMission] data format of lib is not json');
     }
 }
