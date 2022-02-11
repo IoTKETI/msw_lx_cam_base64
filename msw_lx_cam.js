@@ -182,10 +182,12 @@ function msw_mqtt_connect(broker_ip, port) {
                     let patharr = jsonObj.pc['m2m:sgn'].sur.split('/');
                     let lib_ctl_topic = '/MUV/control/' + patharr[patharr.length - 3].replace('msw_', 'lib_') + '/' + patharr[patharr.length - 2];
 
-                    if (getType(cinObj.con) == 'string') {
-                        local_msw_mqtt_client.publish(lib_ctl_topic, cinObj.con);
-                    } else {
-                        local_msw_mqtt_client.publish(lib_ctl_topic, JSON.stringify(cinObj.con));
+                    if (patharr[patharr.length - 3] === my_msw_name) {
+                        if (getType(cinObj.con) == 'string') {
+                            local_msw_mqtt_client.publish(lib_ctl_topic, cinObj.con);
+                        } else {
+                            local_msw_mqtt_client.publish(lib_ctl_topic, JSON.stringify(cinObj.con));
+                        }
                     }
                 } else {
                 }
