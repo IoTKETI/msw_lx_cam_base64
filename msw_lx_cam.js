@@ -178,15 +178,21 @@ function msw_mqtt_connect(broker_ip, port) {
                 if (topic.includes('/oneM2M/req/')) {
                     let jsonObj = JSON.parse(message.toString());
 
-                    let cinObj = jsonObj.pc['m2m:sgn'].nev.rep['m2m:cin']
                     let patharr = jsonObj.pc['m2m:sgn'].sur.split('/');
                     let lib_ctl_topic = '/MUV/control/' + patharr[patharr.length - 3].replace('msw_', 'lib_') + '/' + patharr[patharr.length - 2];
 
                     if (patharr[patharr.length - 3] === my_msw_name) {
-                        if (getType(cinObj.con) == 'string') {
-                            local_msw_mqtt_client.publish(lib_ctl_topic, cinObj.con);
-                        } else {
-                            local_msw_mqtt_client.publish(lib_ctl_topic, JSON.stringify(cinObj.con));
+                        if (jsonObj.pc['m2m:sgn'].nev) {
+                            if (jsonObj.pc['m2m:sgn'].nev.rep) {
+                                if (jsonObj.pc['m2m:sgn'].nev.rep['m2m:cin']) {
+                                    let cinObj = jsonObj.pc['m2m:sgn'].nev.rep['m2m:cin']
+                                    if (getType(cinObj.con) == 'string') {
+                                        local_msw_mqtt_client.publish(lib_ctl_topic, cinObj.con);
+                                    } else {
+                                        local_msw_mqtt_client.publish(lib_ctl_topic, JSON.stringify(cinObj.con));
+                                    }
+                                }
+                            }
                         }
                     }
                 } else {
