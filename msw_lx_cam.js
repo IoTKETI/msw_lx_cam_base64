@@ -130,7 +130,7 @@ function runLib(obj_lib) {
         run_lib.on('exit', function (code) {
             console.log('exit: ' + code);
 
-            setTimeout(run_lib, 3000, obj_lib);
+//             setTimeout(run_lib, 3000, obj_lib);
         });
 
         run_lib.on('error', function (code) {
