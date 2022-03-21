@@ -106,7 +106,7 @@ def action():
             file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
         camera_file.save(target)
     except Exception as e:
-        camera_status = 'camera connection error'
+        camera_status = 'camera connection error - ' + e
         lib_mqtt_client.publish(data_topic, 'camera connection error')
 
     return target
@@ -166,8 +166,8 @@ def main():
     msw_mqtt_connect()
 
     ftp = ftplib.FTP()
-    ftp.connect("203.253.128.177", 50023)
-    ftp.login("d_keti", "keti123")
+    ftp.connect("gcs.iotocean.org", 50023)
+    ftp.login("lx_ftp", "lx123!")
 
     t = threading.Thread(target=send_status, )
     t.start()
@@ -183,7 +183,7 @@ def main():
                 lib_mqtt_client.publish(data_topic, 'captured')
 
                 sending_file = open(target, 'rb')
-                ftp.storbinary('STOR ' + '/Downloads/ftp_test/' + target, sending_file)
+                ftp.storbinary('STOR ' + '/FTP/' + target, sending_file)
                 sending_file.close()
                 ftp.close
             camera.exit()
