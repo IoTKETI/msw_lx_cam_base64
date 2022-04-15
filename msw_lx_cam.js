@@ -19,6 +19,8 @@ let fs = require('fs');
 let spawn = require('child_process').spawn;
 const {nanoid} = require('nanoid');
 const util = require("util");
+let gpi_data = ''
+let gpi_arr = ''
 
 global.sh_man = require('./http_man');
 
@@ -100,7 +102,7 @@ function init() {
                 }
 
                 let obj_lib = config.lib[idx];
-                setTimeout(runLib, 1000 + parseInt(Math.random() * 10), JSON.parse(JSON.stringify(obj_lib)));
+                // setTimeout(runLib, 1000 + parseInt(Math.random() * 10), JSON.parse(JSON.stringify(obj_lib)));
             }
         }
     }
@@ -187,6 +189,12 @@ function msw_mqtt_connect(broker_ip, port) {
                                     let cinObj = jsonObj.pc['m2m:sgn'].nev.rep['m2m:cin']
                                     if (getType(cinObj.con) == 'string') {
                                         local_msw_mqtt_client.publish(lib_ctl_topic, cinObj.con);
+
+                                        setInterval(function (){
+                                            gpi_arr.push(gpi_data);
+                                            fs.writeFileSync('position.json', JSON.stringify(gpi_arr, null, 4), 'utf8');
+
+                                        })
                                     } else {
                                         local_msw_mqtt_client.publish(lib_ctl_topic, JSON.stringify(cinObj.con));
                                     }
@@ -324,6 +332,7 @@ function parseFcData(topic, str_message) {
     let topic_arr = topic.split('/');
     if (topic_arr[topic_arr.length - 1] === 'global_position_int') {
         let _topic = '/MUV/control/' + config.lib[0].name + '/' + topic_arr[topic_arr.length - 1]; // 'global_position_int'
+        gpi_data = str_message
         local_msw_mqtt_client.publish(_topic, str_message);
     } else {
     }
