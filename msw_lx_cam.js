@@ -100,7 +100,7 @@ function init() {
                 }
 
                 let obj_lib = config.lib[idx];
-                setTimeout(runLib, 1000 + parseInt(Math.random() * 10), JSON.parse(JSON.stringify(obj_lib)));
+                // setTimeout(runLib, 1000 + parseInt(Math.random() * 10), JSON.parse(JSON.stringify(obj_lib)));
             }
         }
     }
