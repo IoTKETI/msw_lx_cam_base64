@@ -49,15 +49,15 @@ try {
 // library 추가
 let add_lib = {};
 try {
-    add_lib = JSON.parse(fs.readFileSync('./' + config.directory_name + '/lib_lx_cam.json', 'utf8'));
+    add_lib = JSON.parse(fs.readFileSync('./lib_lx_cam.json', 'utf8'));
     config.lib.push(add_lib);
 } catch (e) {
     add_lib = {
         name: 'lib_lx_cam',
-        target: 'armv6',
-        description: '[name] [portnum] [baudrate]',
+        target: 'armv7l',
+        description: '[name] [server]',
         scripts: './lib_lx_cam',
-        data: ['Status'],
+        data: ['Status', 'Captured_GPS'],
         control: ['Capture']
     };
     config.lib.push(add_lib);
@@ -116,7 +116,7 @@ function runLib(obj_lib) {
             scripts_arr[0] = './' + scripts_arr[0];
         }
 
-        let run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
+        let run_lib = spawn(scripts_arr[0], [drone_info.host]);
 
         run_lib.stdout.on('data', function (data) {
             console.log('stdout: ' + data);
