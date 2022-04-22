@@ -31,7 +31,7 @@ config.name = my_msw_name;
 global.drone_info = '';
 
 try {
-    drone_info = JSON.parse(fs.readFileSync('../drone_info.json', 'utf8'));
+    drone_info = JSON.parse(fs.readFileSync('./drone_info.json', 'utf8'));
 
     config.directory_name = my_msw_name + '_' + my_msw_name;
     // config.sortie_name = '/' + sortie_name;
@@ -56,7 +56,7 @@ try {
         name: 'lib_lx_cam',
         target: 'armv7l',
         description: '[name] [server]',
-        scripts: './lib_lx_cam',
+        scripts: "node app.js",
         data: ['Status', 'Captured_GPS'],
         control: ['Capture']
     };
@@ -100,7 +100,7 @@ function init() {
                 }
 
                 let obj_lib = config.lib[idx];
-                // setTimeout(runLib, 1000 + parseInt(Math.random() * 10), JSON.parse(JSON.stringify(obj_lib)));
+                setTimeout(runLib, 1000 + parseInt(Math.random() * 10), JSON.parse(JSON.stringify(obj_lib)));
             }
         }
     }
@@ -113,10 +113,10 @@ function runLib(obj_lib) {
 
         } else {
             scripts_arr[0] = scripts_arr[0].replace('./', '');
-            scripts_arr[0] = './' + scripts_arr[0];
         }
 
-        let run_lib = spawn(scripts_arr[0], [drone_info.host]);
+        console.log(scripts_arr[0], [scripts_arr[1], drone_info.host])
+        let run_lib = spawn(scripts_arr[0], [scripts_arr[1], drone_info.host]);
 
         run_lib.stdout.on('data', function (data) {
             console.log('stdout: ' + data);
