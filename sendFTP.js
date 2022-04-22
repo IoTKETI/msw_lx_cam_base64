@@ -31,11 +31,11 @@ function init() {
 
 function read_mission() {
     try {
-        mission = gps_filename.findOne({name: 'mission_name'})._settledValue.mission;
+        let argv = gps_filename.findOne({name: 'mission_name'})._settledValue;
         if (mission === undefined) {
             setTimeout(read_mission, 500);
         }
-        ftp_dir = moment().format('YYYY-MM-DD') + '-' + mission + '_' + drone_name;
+        ftp_dir = moment().format('YYYY-MM-DD') + '-' + argv.mission + '_' + argv.drone;
         console.log('mission is ', mission);
         console.log('FTP directory is ' + ftp_dir);
     } catch (e) {

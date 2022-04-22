@@ -24,7 +24,7 @@ let interval = 6;
 let mission = '';
 
 let ftp_dir = '';
-let drone_name = process.argv[3];
+let drone_name = process.argv[2];
 console.log('[captureImage]', drone_name);
 
 init();
@@ -114,7 +114,7 @@ function lib_mqtt_connect(broker_ip, port, fc, control) {
 
                     gps_filename.findOne({name: 'mission_name'}).then(function (u) {
                         gps_filename.remove(u).then(function () {
-                            gps_filename.insert({name: 'mission_name', mission: 'keti'}).then(function (u) {
+                            gps_filename.insert({name: 'mission_name', mission: mission, drone:drone_name}).then(function (u) {
                                 console.log('insert mission info');
                                 console.log(u);
                             });
