@@ -57,7 +57,7 @@ async function ftp_connect(host, user, pw) {
             password: pw,
             port: 50023
         })
-
+        console.log('[FTP]', ftp_dir);
         ftp_client.ensureDir("/" + ftp_dir);
 
         console.log('Connect FTP server to ' + host);
