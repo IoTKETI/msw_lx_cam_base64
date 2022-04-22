@@ -119,7 +119,7 @@ function lib_mqtt_connect(broker_ip, port, fc, control) {
                         });
                     });
 
-                    ftp_dir = moment().format('YYYY-MM-DD') + '-' + mission;
+                    ftp_dir = moment().format('YYYY-MM-DD') + '-' + mission + '_' + drone_name;
                     !fs.existsSync(ftp_dir) && fs.mkdirSync(ftp_dir);
 
                     capture_image();
