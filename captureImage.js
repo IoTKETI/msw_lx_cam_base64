@@ -25,6 +25,7 @@ let mission = '';
 
 let ftp_dir = '';
 let drone_name = process.argv[3];
+console.log('[captureImage]', drone_name);
 
 init();
 

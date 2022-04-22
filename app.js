@@ -13,4 +13,4 @@ const { result } = concurrently([
     restartTries: 3
 });
 result.then(success, failure);
-console.log(process.argv)
+console.log('[app]', process.argv[3]);
