@@ -5,7 +5,7 @@ let success, failure = '';
 const { result } = concurrently([
     'node captureImage.js ' + process.argv[3],
     'node geotagging.js',
-    'node sendFTP.js ' + process.argv[2] + ' ' + process.argv[3],
+    'node sendFTP.js ' + process.argv[2],
 
 ], {
     prefix: 'name',

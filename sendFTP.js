@@ -7,8 +7,7 @@ var gps_filename = db('./gps_filename.json');
 
 let mission = '';
 let ftp_dir = '';
-let drone_name = process.argv[3];
-console.log('[sendFTP]', drone_name);
+let drone_name = '';
 
 let ftp_client = null;
 let ftp_host = process.argv[2];
@@ -34,6 +33,17 @@ function read_mission() {
         let argv = gps_filename.findOne({name: 'mission_name'})._settledValue;
         if (argv === undefined) {
             setTimeout(read_mission, 500);
+        } else {
+            if (argv.hasOwnProperty('mission')) {
+                mission = argv.mission;
+            } else {
+                mission = 'Empty';
+            }
+            if (argv.hasOwnProperty('drone')) {
+                drone_name = argv.drone;
+            } else {
+                drone_name = 'undefined';
+            }
         }
 
         ftp_dir = moment().format('YYYY-MM-DD') + '-' + argv.mission + '_' + argv.drone;
@@ -57,7 +67,7 @@ async function ftp_connect(host, user, pw) {
             password: pw,
             port: 50023
         })
-        console.log('[FTP]', ftp_dir);
+
         ftp_client.ensureDir("/" + ftp_dir);
 
         console.log('Connect FTP server to ' + host);
