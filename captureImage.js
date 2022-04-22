@@ -24,6 +24,7 @@ let interval = 6;
 let mission = '';
 
 let ftp_dir = '';
+let drone_name = process.argv[3];
 
 init();
 
