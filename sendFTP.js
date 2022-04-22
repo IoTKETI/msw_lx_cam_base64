@@ -8,6 +8,7 @@ var gps_filename = db('./gps_filename.json');
 let mission = '';
 let ftp_dir = '';
 let drone_name = process.argv[3];
+console.log(drone_name);
 
 let ftp_client = null;
 let ftp_host = process.argv[2];
