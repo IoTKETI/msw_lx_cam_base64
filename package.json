@@ -10,8 +10,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mqtt": "^4.3.5",
-    "nanoid": "^3.2.0",
-    "shortid": "^2.2.16"
+    "basic-ftp": "^4.6.6",
+    "concurrently": "^7.1.0",
+    "exif": "^0.6.0",
+    "moment": "^2.29.2",
+    "mqtt": "^4.3.7",
+    "nanoid": "^3.3.2",
+    "node-localdb": "0.0.3",
+    "piexifjs": "^1.0.6",
+    "shortid": "^2.2.16",
+    "tree-kill": "^1.2.2"
   }
 }
