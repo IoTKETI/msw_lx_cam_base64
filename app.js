@@ -1,12 +1,11 @@
 const concurrently = require('concurrently');
 
-let drone_info = 'gcs.iotocean.org';
 let success, failure = '';
 
 const { result } = concurrently([
     'node captureImage.js',
     'node geotagging.js',
-    'node sendFTP.js ' + drone_info,
+    'node sendFTP.js ' + process.argv[2] + ' ' + process.argv[3],
 
 ], {
     prefix: 'name',

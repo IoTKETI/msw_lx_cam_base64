@@ -7,6 +7,7 @@ var gps_filename = db('./gps_filename.json');
 
 let mission = '';
 let ftp_dir = '';
+let drone_name = process.argv[3];
 
 let ftp_client = null;
 let ftp_host = process.argv[2];
@@ -33,7 +34,7 @@ function read_mission() {
         if (mission === undefined) {
             setTimeout(read_mission, 500);
         }
-        ftp_dir = moment().format('YYYY-MM-DD') + '-' + mission;
+        ftp_dir = moment().format('YYYY-MM-DD') + '-' + mission + '_' + drone_name;
         console.log('mission is ', mission);
         console.log('FTP directory is ' + ftp_dir);
     } catch (e) {
