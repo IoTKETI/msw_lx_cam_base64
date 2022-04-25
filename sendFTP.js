@@ -110,24 +110,9 @@ async function send_image_via_ftp() {
 
         if (geotagged_arr.length > 0) {
             await ftp_client.uploadFrom('./' + geotagging_dir + '/' + geotagged_arr[0], "/" + ftp_dir + '/' + geotagged_arr[0]).then(function () {
+                console.log('send ' + geotagged_arr[0]);
                 setTimeout(move_image, 1000, './' + geotagging_dir + '/', './' + ftp_dir + '/', geotagged_arr[0]);
             });
-            // let temp_arr = [];
-            // fs.readdir('./' + ftp_dir + '/', (err, files) => {
-            //     if (err) {
-            //     } else {
-            //         files.forEach(file => {
-            //             if (file.includes('.jpg') || file.includes('.JPG')) {
-            //                 if (!temp_arr.includes(file)) {
-            //                     temp_arr.push(file);
-            //                 }
-            //             }
-            //         });
-            //         if (temp_arr.length === 100) {
-            //             console.log('End Time : ', moment().format('YYYY-MM-DDTHH:mm:ss'));
-            //         }
-            //     }
-            // });
         }
     } catch (e) {
     }
