@@ -108,9 +108,12 @@ async function send_image_via_ftp() {
             }
         });
 
+        console.time('ftp');
+
         if (geotagged_arr.length > 0) {
             await ftp_client.uploadFrom('./' + geotagging_dir + '/' + geotagged_arr[0], "/" + ftp_dir + '/' + geotagged_arr[0]).then(function () {
                 console.log('send ' + geotagged_arr[0]);
+                console.timeEnd('ftp');
                 setTimeout(move_image, 1000, './' + geotagging_dir + '/', './' + ftp_dir + '/', geotagged_arr[0]);
             });
         }

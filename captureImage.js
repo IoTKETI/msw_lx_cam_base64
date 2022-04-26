@@ -23,6 +23,9 @@ let capture_command = null;
 let interval = 6;
 let mission = '';
 
+let capture_flag = false;
+let count = 0;
+
 let ftp_dir = '';
 let drone_name = process.argv[2];
 console.log('[captureImage]', drone_name);
@@ -114,7 +117,11 @@ function lib_mqtt_connect(broker_ip, port, fc, control) {
 
                     gps_filename.findOne({name: 'mission_name'}).then(function (u) {
                         gps_filename.remove(u).then(function () {
-                            gps_filename.insert({name: 'mission_name', mission: mission, drone:drone_name}).then(function (u) {
+                            gps_filename.insert({
+                                name: 'mission_name',
+                                mission: mission,
+                                drone: drone_name
+                            }).then(function (u) {
                                 console.log('insert mission info');
                                 console.log(u);
                             });
@@ -124,11 +131,14 @@ function lib_mqtt_connect(broker_ip, port, fc, control) {
                     ftp_dir = moment().format('YYYY-MM-DD') + '-' + mission + '_' + drone_name;
                     !fs.existsSync(ftp_dir) && fs.mkdirSync(ftp_dir);
 
-                    capture_image();
+                    count = 0;
+                    capture_flag = true;
+
                 } else if (message.toString() === 's') {
                     if (capture_command !== null) {
                         kill(capture_command.pid);
                     }
+                    capture_flag = false;
                 }
             }
         });
@@ -140,35 +150,52 @@ function lib_mqtt_connect(broker_ip, port, fc, control) {
 }
 
 function capture_image() {
-    capture_command = exec("gphoto2 --capture-image-and-download --filename 20%y-%m-%dT%H:%M:%S.jpg --interval " + interval + " --folder ./");
+    // capture_command = exec("gphoto2 --capture-image-and-download --filename 20%y-%m-%dT%H:%M:%S.jpg --interval " + interval + " --folder ./");
+    if (capture_flag) {
+        console.time('capture');
+        // capture_command = exec("gphoto2 --capture-image-and-download --filename 20%y-%m-%dT%H:%M:%S.jpg --folder ./");
+        capture_command = exec("gphoto2 --capture-image-and-download --filename 20%y-%m-%dT%H:%M:%S.jpg --interval " + interval + " --folder ./");
 
-    capture_command.stdout.on('data', function (data) {
-        if (data.split('\n')[1].includes('.jpg')) {
-            let data_arr = data.split('\n')[1].split(' ')
-            for (let idx in data_arr) {
-                if (data_arr[idx].includes('.jpg')) {
-                    gpi_data.image = data_arr[idx];
+        capture_command.stdout.on('data', function (data) {
+            console.log(count++, 'data: ' + data);
+            console.timeEnd('capture')
+            if (data.split('\n')[1].includes('.jpg')) {
+                let data_arr = data.split('\n')[1].split(' ')
+                for (let idx in data_arr) {
+                    if (data_arr[idx].includes('.jpg')) {
+                        gpi_data.image = data_arr[idx];
 
-                    gps_filename.insert(gpi_data);
+                        gps_filename.insert(gpi_data);
 
-                    lib_mqtt_client.publish(captured_position_topic, JSON.stringify(gpi_data)); // backup gps and image name
+                        lib_mqtt_client.publish(captured_position_topic, JSON.stringify(gpi_data)); // backup gps and image name
+                    }
                 }
             }
-        }
-    });
+        });
 
-    capture_command.stderr.on('data', function (data) {
-        console.log('stderr: ' + data);
-        if (data.includes('gphoto2: not found')) {
-            console.log('Please install gphoto library');
-        }
-    });
+        capture_command.stderr.on('data', function (data) {
+            console.log('stderr: ' + data);
+            if (data.includes('gphoto2: not found')) {
+                console.log('Please install gphoto library');
+            }
+        });
 
-    capture_command.on('exit', function (code) {
-        console.log('exit: ' + code);
-    });
+        capture_command.on('exit', (code) => {
+            console.log(count++, 'exit: ' + code);
+            console.timeEnd('capture')
+        });
 
-    capture_command.on('error', function (code) {
-        console.log('error: ' + code);
-    });
+        capture_command.on('error', function (code) {
+            console.log('error: ' + code);
+        });
+    }
 }
+
+var tid = setInterval(() => {
+    if(capture_flag) {
+        clearInterval(tid);
+        capture_image();
+
+    }
+}, interval * 1000);
+
