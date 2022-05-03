@@ -30,6 +30,8 @@ let config = {};
 config.name = my_msw_name;
 global.drone_info = '';
 
+let send_position_image = null;
+
 try {
     drone_info = JSON.parse(fs.readFileSync('./drone_info.json', 'utf8'));
 
@@ -77,6 +79,7 @@ msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + 
 let msw_sub_lib_topic = [];
 
 function init() {
+    clearInterval(send_position_image);
     if (config.lib.length > 0) {
         for (let idx in config.lib) {
             if (config.lib.hasOwnProperty(idx)) {
@@ -289,6 +292,8 @@ setTimeout(init, 1000);
 
 // 유저 디파인 미션 소프트웨어 기능
 ///////////////////////////////////////////////////////////////////////////////
+let data_msg_arr = [];
+
 function parseDataMission(topic, str_message) {
     try {
         // let obj_lib_data = JSON.parse(str_message);
@@ -301,6 +306,9 @@ function parseDataMission(topic, str_message) {
         let data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + topic_arr[topic_arr.length - 1];
         msw_mqtt_client.publish(data_topic, str_message);
         sh_man.crtci(data_topic + '?rcn=0', 0, str_message, null, function (rsc, res_body, parent, socket) {
+            if (rsc !== 2001) {
+                data_msg_arr.push(data_topic, str_message);
+            }
         });
     } catch (e) {
         console.log('[parseDataMission] data format of lib is not json');
@@ -327,3 +335,13 @@ function parseFcData(topic, str_message) {
     } else {
     }
 }
+
+send_position_image = setInterval(() => {
+    if (data_msg_arr.length > 0) {
+        sh_man.crtci(data_msg_arr[0][0] + '?rcn=0', 0, data_msg_arr[0][1], null, function (rsc, res_body, parent, socket) {
+            if (rsc === 2001) {
+                data_msg_arr.shift();
+            }
+        });
+    }
+}, 1000);
