@@ -14,9 +14,9 @@
 
 // for TAS of mission
 
-let mqtt = require('mqtt');
-let fs = require('fs');
-let spawn = require('child_process').spawn;
+const mqtt = require('mqtt');
+const fs = require('fs');
+const spawn = require('child_process').spawn;
 const {nanoid} = require('nanoid');
 const util = require("util");
 
@@ -31,7 +31,7 @@ config.name = my_msw_name;
 global.drone_info = '';
 
 try {
-    drone_info = JSON.parse(fs.readFileSync('../drone_info.json', 'utf8'));
+    drone_info = JSON.parse(fs.readFileSync('./drone_info.json', 'utf8'));
 
     config.directory_name = my_msw_name + '_' + my_msw_name;
     // config.sortie_name = '/' + sortie_name;
@@ -56,7 +56,7 @@ try {
         name: 'lib_lx_cam',
         target: 'armv7l',
         description: '[name] [server]',
-        scripts: "node app.js",
+        scripts: "sh lib_lx_cam.sh",
         data: ['Status', 'Captured_GPS'],
         control: ['Capture']
     };
@@ -114,8 +114,8 @@ function runLib(obj_lib) {
         } else {
             scripts_arr[0] = scripts_arr[0].replace('./', '');
         }
-
         let run_lib = spawn(scripts_arr[0], [scripts_arr[1], drone_info.host, drone_info.drone]);
+        // spawn("sh", ["lib_lx_cam.sh", "ftp_host", "drone_name"]);
 
         run_lib.stdout.on('data', function (data) {
             console.log('stdout: ' + data);
