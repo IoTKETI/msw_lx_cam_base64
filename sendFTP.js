@@ -1,9 +1,13 @@
-let fs = require('fs');
+const fs = require('fs');
 const moment = require("moment");
 const sendFTP = require("basic-ftp");
-var db = require('node-localdb');
+const db = require('node-localdb');
+const {nanoid} = require("nanoid");
+const mqtt = require("mqtt");
 
-var gps_filename = db('./gps_filename.json');
+let gps_filename = db('./gps_filename.json');
+
+const my_lib_name = 'lib_lx_cam';
 
 let mission = '';
 let ftp_dir = '';
@@ -17,6 +21,14 @@ let ftp_pw = 'lx123!';
 let geotagging_dir = 'Geotagged';
 let geotagged_arr = [];
 
+let lib = {};
+
+let lib_mqtt_client = null;
+let my_status_topic = '';
+
+let status = 'Init';
+let count = 0;
+
 init();
 
 function init() {
@@ -24,8 +36,59 @@ function init() {
 
     ftp_connect(ftp_host, ftp_user, ftp_pw);
 
-    // setInterval(get_image_for_ftp, 2000);
+    try {
+        lib = {};
+        lib = JSON.parse(fs.readFileSync('./' + my_lib_name + '.json', 'utf8'));
+    } catch (e) {
+        lib = {};
+        lib.name = my_lib_name;
+        lib.target = 'armv7l';
+        lib.description = "[name]";
+        lib.scripts = './' + my_lib_name;
+        lib.data = ["Capture_Status", "Geotag_Status", "FTP_Status", 'Captured_GPS'];
+        lib.control = ['Capture'];
+
+        fs.writeFileSync('./' + my_lib_name + '.json', JSON.stringify(lib, null, 4), 'utf8');
+    }
+
+    my_status_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][2];
+
+    lib_mqtt_connect('localhost', 1883);
+
     send_image_via_ftp();
+}
+
+function lib_mqtt_connect(broker_ip, port) {
+    if (lib_mqtt_client == null) {
+        let connectOptions = {
+            host: broker_ip,
+            port: port,
+            protocol: "mqtt",
+            keepalive: 10,
+            protocolId: "MQTT",
+            protocolVersion: 4,
+            clientId: 'lib_mqtt_client_mqttjs_' + my_lib_name + '_' + 'ftp_' + nanoid(15),
+            clean: true,
+            reconnectPeriod: 2000,
+            connectTimeout: 2000,
+            rejectUnauthorized: false
+        };
+
+        lib_mqtt_client = mqtt.connect(connectOptions);
+
+        lib_mqtt_client.on('connect', function () {
+            console.log('[geotag_lib_mqtt_connect] connected to ' + broker_ip);
+            lib_mqtt_client.publish(my_status_topic, status);
+        });
+
+        lib_mqtt_client.on('message', function (topic, message) {
+            console.log('From ' + topic + 'message is ' + message.toString());
+        });
+
+        lib_mqtt_client.on('error', function (err) {
+            console.log(err.message);
+        });
+    }
 }
 
 function read_mission() {
@@ -77,21 +140,7 @@ async function ftp_connect(host, user, pw) {
     }
 }
 
-// function get_image_for_ftp() {
-//     fs.readdir('./' + geotagging_dir + '/', (err, files) => {
-//         files.forEach(file => {
-//             if (file.includes('.jpg') || file.includes('.JPG')) {
-//                 if (!geotagged_arr.includes(file)) {
-//                     geotagged_arr.push(file);
-//                 }
-//             }
-//         });
-//     });
-//
-//     if (geotagged_arr.length > 0) {
-//         setTimeout(send_image_via_ftp, 4000, geotagged_arr[0]);
-//     }
-// }
+let empty_count = 0;
 
 async function send_image_via_ftp() {
     try {
@@ -111,11 +160,25 @@ async function send_image_via_ftp() {
         console.time('ftp');
 
         if (geotagged_arr.length > 0) {
-            await ftp_client.uploadFrom('./' + geotagging_dir + '/' + geotagged_arr[0], "/" + ftp_dir + '/' + geotagged_arr[0]).then(function () {
-                console.log('send ' + geotagged_arr[0]);
+            await ftp_client.uploadFrom('./' + geotagging_dir + '/' + geotagged_arr[0], "/" + ftp_dir + '/' + geotagged_arr[0]).then(() => {
                 console.timeEnd('ftp');
+                console.log('send ' + geotagged_arr[0]);
                 setTimeout(move_image, 1000, './' + geotagging_dir + '/', './' + ftp_dir + '/', geotagged_arr[0]);
+                status = 'Send ' + count++;
+                empty_count = 0;
+                lib_mqtt_client.publish(my_status_topic, status);
             });
+        } else {
+            if (status.includes('Send')) {
+                status = 'empty';
+            } else if (status === 'empty') {
+                empty_count++;
+            }
+
+            if (empty_count > 20) {
+                status = 'Finish' + count;
+                lib_mqtt_client.publish(my_status_topic, status);
+            }
         }
     } catch (e) {
     }
@@ -124,9 +187,6 @@ async function send_image_via_ftp() {
 
 function move_image(from, to, image) {
     try {
-        // fs.copyFile(from + image, to + image, (err) => {
-        //     if (err) throw err;
-        // });
         fs.renameSync(from + image, to + image);
         geotagged_arr.shift();
     } catch (e) {
@@ -140,5 +200,3 @@ function move_image(from, to, image) {
         geotagged_arr.shift();
     }
 }
-
-// const { result } = concurrently(['node capture.js', 'node geotagging.js', 'node ftp.js ' + ftp_info]);

@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Wonseok Jung, Autonomous IoT Research Center, KETI",
   "license": "ISC",
   "dependencies": {
     "basic-ftp": "^4.6.6",
