@@ -4,7 +4,6 @@ const moment = require("moment");
 const db = require('node-localdb');
 const {nanoid} = require("nanoid");
 const mqtt = require("mqtt");
-const kill = require("tree-kill");
 
 let gps_filename = db('./gps_filename.json');
 

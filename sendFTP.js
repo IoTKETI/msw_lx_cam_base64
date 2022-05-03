@@ -176,7 +176,8 @@ async function send_image_via_ftp() {
             }
 
             if (empty_count > 20) {
-                status = 'Finish' + count;
+                status = 'Finish ' + count;
+                empty_count = 0;
                 lib_mqtt_client.publish(my_status_topic, status);
             }
         }
