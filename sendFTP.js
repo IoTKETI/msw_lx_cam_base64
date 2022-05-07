@@ -45,7 +45,7 @@ function init() {
         lib.target = 'armv7l';
         lib.description = "[name]";
         lib.scripts = './' + my_lib_name;
-        lib.data = ["Capture_Status", "Geotag_Status", "FTP_Status", 'Captured_GPS'];
+        lib.data = ["Capture_Status", "Geotag_Status", "FTP_Status", "Captured_GPS"];
         lib.control = ['Capture'];
 
         fs.writeFileSync('./' + my_lib_name + '.json', JSON.stringify(lib, null, 4), 'utf8');
@@ -176,7 +176,7 @@ async function send_image_via_ftp() {
             }
 
             if (empty_count > 20) {
-                status = 'Finish ' + count;
+                status = 'Finish ' + (count - 1);
                 empty_count = 0;
                 lib_mqtt_client.publish(my_status_topic, status);
             }

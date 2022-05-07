@@ -44,7 +44,7 @@ function init() {
         lib.target = 'armv7l';
         lib.description = "[name]";
         lib.scripts = './' + my_lib_name;
-        lib.data = ["Capture_Status", "Geotag_Status", "FTP_Status", 'Captured_GPS'];
+        lib.data = ["Capture_Status", "Geotag_Status", "FTP_Status", "Captured_GPS"];
         lib.control = ['Capture'];
 
         fs.writeFileSync('./' + my_lib_name + '.json', JSON.stringify(lib, null, 4), 'utf8');
@@ -57,29 +57,35 @@ function init() {
 
     lib_mqtt_connect('localhost', 1883, gpi_topic, control_topic);
 
-    let camera_summary = exec("gphoto2 --summary");
+    lib_mqtt_client.publish(my_status_topic, status);
 
-    camera_summary.stdout.on('data', (data) => {
-        console.log('stdout: ' + data);
+    setTimeout(()=> {
+        let camera_summary = exec("gphoto2 --summary");
 
-        if (data.includes('sufficient quoting around the arguments')) {
-            console.log('Please check the connection with the camera.');
-        } else { // TODO: 우선 if문의 에러 외 모든 상황은 정상으로 가정. 추후 정상적이지 않은 부분 필터링
-            status = 'Ready';
-            lib_mqtt_client.publish(my_status_topic, status);
-        }
-    });
-    camera_summary.stderr.on('data', (data) => {
-        console.log('stderr: ' + data);
-    });
-    camera_summary.on('exit', (code) => {
-        console.log('exit: ' + code);
-    });
-    camera_summary.on('error', function (code) {
-        console.log('error: ' + code);
-    });
-    // // TODO: 테스트용 추후 삭제
-    // lib_mqtt_client.publish(my_status_topic, status);
+
+        camera_summary.stdout.on('data', (data) => {
+            console.log('stdout: ' + data);
+
+            if (data.includes('sufficient quoting around the arguments')) {
+                console.log('Please check the connection with the camera.');
+            } else { // TODO: 우선 if문의 에러 외 모든 상황은 정상으로 가정. 추후 정상적이지 않은 부분 필터링
+                status = 'Ready';
+                lib_mqtt_client.publish(my_status_topic, status);
+            }
+        });
+        camera_summary.stderr.on('data', (data) => {
+            console.log('stderr: ' + data);
+        });
+        camera_summary.on('exit', (code) => {
+            console.log('exit: ' + code);
+        });
+        camera_summary.on('error', function (code) {
+            console.log('error: ' + code);
+        });
+        // // TODO: 테스트용 추후 삭제
+        // status = 'Ready';
+        // lib_mqtt_client.publish(my_status_topic, status);
+    }, 1000);
 }
 
 function lib_mqtt_connect(broker_ip, port, fc, control) {
@@ -143,9 +149,7 @@ function lib_mqtt_connect(broker_ip, port, fc, control) {
                     !fs.existsSync(ftp_dir) && fs.mkdirSync(ftp_dir);
 
                     count = 0;
-                    // // TODO: 테스트용 추후 삭제
-                    // status = 'Ready';
-                    // // TODO: 테스트용 추후 삭제
+
                     if (status !== 'Ready') {
                         status = 'Check camera..';
                         lib_mqtt_client.publish(my_status_topic, status);
@@ -199,6 +203,8 @@ function capture_image() {
             if (data.includes('gphoto2: not found')) {
                 console.log('Please install gphoto library');
             } else if (data.includes('PTP Cancel')) {
+                status = 'Ready';
+                lib_mqtt_client.publish(my_status_topic, status);
                 console.log('Capture process Stop.');
             } else {
                 console.log('stderr: ' + data);
@@ -220,7 +226,7 @@ var tid = setInterval(() => {
     if (capture_flag) {
         clearInterval(tid);
         capture_image();
-        // TODO: 테스트용 추후 삭제
+        // // TODO: 테스트용 추후 삭제
         // console.log('capture');
     }
 }, interval * 1000);
