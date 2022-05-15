@@ -114,6 +114,9 @@ function geotag_image() {
             exifObj.GPS[piexif.GPSIFD.GPSLongitudeRef] = (gps.lon / 10000000) < 0 ? 'W' : 'E';
             exifObj.GPS[piexif.GPSIFD.GPSLongitude] = Degree2DMS(gps.lon / 10000000);
             // exifObj.GPS[piexif.GPSIFD.GPSAltitude] = Degree2DMS(gps.relative_alt / 1000);
+            if (gps.alt < 0) {
+                gps.alt = 0;
+            }
             exifObj.GPS[piexif.GPSIFD.GPSAltitude] = [gps.alt, 1000];
             exifObj.GPS[piexif.GPSIFD.GPSAltitudeRef] = 0;
 
@@ -129,6 +132,7 @@ function geotag_image() {
         }
         console.timeEnd('geotag');
     } catch (e) {
+        console.log(e)
         console.time('geotag_catch');
 
         if (e instanceof TypeError) {
