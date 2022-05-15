@@ -106,7 +106,7 @@ function geotag_image() {
             let data = jpeg.toString("binary");
 
             let exifObj = piexif.load(data);
-            captured_arr[0] = captured_arr[0].replace(/_/g, ':');
+            // captured_arr[0] = captured_arr[0].replace(/_/g, ':');
             let gps = gps_filename.findOne({image: captured_arr[0]})._settledValue;
 
             exifObj.GPS[piexif.GPSIFD.GPSLatitude] = Degree2DMS(gps.lat / 10000000);
@@ -117,7 +117,7 @@ function geotag_image() {
 
             let newData = piexif.insert(exifbytes, data);
             let newJpeg = Buffer.from(newData, "binary");
-            captured_arr[0] = captured_arr[0].replace(/:/g, '_');
+            // captured_arr[0] = captured_arr[0].replace(/:/g, '_');
             fs.writeFileSync(captured_arr[0], newJpeg);
             setTimeout(move_image, 1000, './', './' + geotagging_dir + '/', captured_arr[0], 'geo');
             status = 'Geotagging ' + count++;

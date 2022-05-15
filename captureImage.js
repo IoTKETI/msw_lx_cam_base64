@@ -62,7 +62,6 @@ function init() {
     setTimeout(()=> {
         let camera_summary = exec("gphoto2 --summary");
 
-
         camera_summary.stdout.on('data', (data) => {
             console.log('stdout: ' + data);
 
