@@ -9,6 +9,7 @@ let gps_filename = db('./gps_filename.json');
 
 const my_lib_name = 'lib_lx_cam';
 
+let prev_mission = 'Empty';
 let mission = '';
 let ftp_dir = '';
 let drone_name = '';
@@ -110,15 +111,19 @@ function read_mission() {
         }
 
         ftp_dir = moment().format('YYYY-MM-DD') + '-' + argv.mission + '_' + argv.drone;
-        console.log('mission is ', argv.mission);
-        console.log('drone is ', argv.drone);
-        console.log('FTP directory is ' + ftp_dir);
+
+        if (prev_mission !== mission) {
+            if (ftp_client !== null) {
+                ftp_client.ensureDir("/" + ftp_dir);
+            }
+            prev_mission = mission;
+        }
     } catch (e) {
-        console.log(e)
         if (e instanceof TypeError) {
-            setTimeout(read_mission, 1000);
+            console.log(e)
         }
     }
+    setTimeout(read_mission, 1000);
 }
 
 async function ftp_connect(host, user, pw) {
