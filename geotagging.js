@@ -124,8 +124,8 @@ function geotag_image() {
             // captured_arr[0] = captured_arr[0].replace(/:/g, '_');
             fs.writeFileSync(captured_arr[0], newJpeg);
             setTimeout(move_image, 1000, './', './' + geotagging_dir + '/', captured_arr[0], 'geo');
-            status = 'Geotagging ' + count++;
-            lib_mqtt_client.publish(my_status_topic, status);
+            // status = 'Geotagging ' + count++;
+            // lib_mqtt_client.publish(my_status_topic, status);
         }
         console.timeEnd('geotag');
     } catch (e) {
@@ -156,8 +156,8 @@ function geotag_image() {
                 // captured_arr[0] = captured_arr[0].replace(/:/g, '_');
                 fs.writeFileSync(captured_arr[0], newJpeg);
                 setTimeout(move_image, 1000, './', './' + geotagging_dir + '/', captured_arr[0]);
-                status = 'Geotagging ' + count++;
-                lib_mqtt_client.publish(my_status_topic, status);
+                // status = 'Geotagging ' + count++;
+                // lib_mqtt_client.publish(my_status_topic, status);
             } catch (e) {
                 console.log('ENOENT: no such file or directory, open ' + captured_arr[0]);
                 captured_arr.shift();
@@ -187,6 +187,8 @@ function move_image(from, to, image) {
     try {
         fs.renameSync(from + image, to + image);
         console.log('move from ' + from + image + ' to ' + to + image);
+        status = 'Geotagging ' + count++;
+        lib_mqtt_client.publish(my_status_topic, status);
         captured_arr.shift();
     } catch (e) {
         fs.stat(to + image, (err) => {
