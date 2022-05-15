@@ -33,7 +33,7 @@ global.drone_info = '';
 let send_position_image = null;
 
 try {
-    drone_info = JSON.parse(fs.readFileSync('./drone_info.json', 'utf8'));
+    drone_info = JSON.parse(fs.readFileSync('../drone_info.json', 'utf8'));
 
     config.directory_name = my_msw_name + '_' + my_msw_name;
     // config.sortie_name = '/' + sortie_name;
