@@ -183,8 +183,7 @@ function capture_image() {
 
         capture_command.stdout.on('data', (data) => {
             // console.log(count++, 'data: ' + data);
-            status = 'Capture ' + count++;
-            lib_mqtt_client.publish(my_status_topic, status);
+
             console.timeEnd('capture');
             if (data.split('\n')[1].includes('.jpg')) {
                 let data_arr = data.split('\n')[1].split(' ')
@@ -196,6 +195,8 @@ function capture_image() {
                         lib_mqtt_client.publish(captured_position_topic, JSON.stringify(gpi_data)); // backup gps and image name
                     }
                 }
+                status = 'Capture ' + count++;
+                lib_mqtt_client.publish(my_status_topic, status);
             }
         });
 
