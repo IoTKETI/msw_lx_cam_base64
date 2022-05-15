@@ -114,6 +114,7 @@ function read_mission() {
         console.log('drone is ', argv.drone);
         console.log('FTP directory is ' + ftp_dir);
     } catch (e) {
+        console.log(e)
         if (e instanceof TypeError) {
             setTimeout(read_mission, 500);
         }
