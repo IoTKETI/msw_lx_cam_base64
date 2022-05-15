@@ -67,9 +67,6 @@ function init() {
 
             if (data.includes('sufficient quoting around the arguments')) {
                 console.log('Please check the connection with the camera.');
-            } else { // TODO: 우선 if문의 에러 외 모든 상황은 정상으로 가정. 추후 정상적이지 않은 부분 필터링
-                status = 'Ready';
-                lib_mqtt_client.publish(my_status_topic, status);
             }
         });
         camera_summary.stderr.on('data', (data) => {
@@ -77,6 +74,10 @@ function init() {
         });
         camera_summary.on('exit', (code) => {
             console.log('exit: ' + code);
+            if (code === 0) {
+                status = 'Ready';
+                lib_mqtt_client.publish(my_status_topic, status);
+            }
         });
         camera_summary.on('error', function (code) {
             console.log('error: ' + code);
