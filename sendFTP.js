@@ -116,7 +116,7 @@ function read_mission() {
     } catch (e) {
         console.log(e)
         if (e instanceof TypeError) {
-            setTimeout(read_mission, 500);
+            setTimeout(read_mission, 1000);
         }
     }
 }
