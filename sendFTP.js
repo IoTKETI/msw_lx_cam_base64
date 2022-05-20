@@ -137,7 +137,7 @@ async function ftp_connect(host, user, pw) {
 
 let empty_count = 0;
 
-async function send_image_via_ftp() {
+function send_image_via_ftp() {
     try {
         fs.readdir('./' + geotagging_dir + '/', (err, files) => {
             if (err) {
@@ -151,40 +151,43 @@ async function send_image_via_ftp() {
                 // });
                 if (files.length > 0) {
                     geotagged_arr.push(files[0]);
+
+                    console.time('ftp');
+                    ftp_client.uploadFrom('./' + geotagging_dir + '/' + geotagged_arr[0], "/" + ftp_dir + '/' + geotagged_arr[0]).then(() => {
+                        console.timeEnd('ftp');
+                        // console.log('send ' + geotagged_arr[0]);
+                        setTimeout(move_image, 1, './' + geotagging_dir + '/', './' + ftp_dir + '/', geotagged_arr[0]);
+                        //status = 'Send ' + count++;
+                        count++;
+                        console.log(count);
+                        empty_count = 0;
+                        let msg = status + ' ' + count;
+                        lib_mqtt_client.publish(my_status_topic, msg);
+
+                        setTimeout(send_image_via_ftp, 5);
+                    });
+                } else {
+                    if (status === 'Started') {
+                        empty_count++;
+                        console.log('Waiting - ' + empty_count);
+                        if (empty_count > 50) {
+                            status = 'Finish';
+                            empty_count = 0;
+                            let msg = status + ' ' + count;
+                            lib_mqtt_client.publish(my_status_topic, msg);
+                        } else {
+                            setTimeout(send_image_via_ftp, 50);
+                        }
+                    } else {
+                        setTimeout(send_image_via_ftp, 100);
+                    }
                 }
             }
         });
 
-        if (geotagged_arr.length > 0) {
-            console.time('ftp');
-            await ftp_client.uploadFrom('./' + geotagging_dir + '/' + geotagged_arr[0], "/" + ftp_dir + '/' + geotagged_arr[0]).then(() => {
-                console.timeEnd('ftp');
-                // console.log('send ' + geotagged_arr[0]);
-                setTimeout(move_image, 1, './' + geotagging_dir + '/', './' + ftp_dir + '/', geotagged_arr[0]);
-                //status = 'Send ' + count++;
-                count++;
-                console.log(count);
-                empty_count = 0;
-                let msg = status + ' ' + count;
-                lib_mqtt_client.publish(my_status_topic, msg);
 
-                setTimeout(send_image_via_ftp, 5);
-            });
-        } else {
-            if (status === 'Started') {
-                empty_count++;
-                if (empty_count > 20) {
-                    status = 'Finish';
-                    empty_count = 0;
-                    let msg = status + ' ' + count;
-                    lib_mqtt_client.publish(my_status_topic, msg);
-                } else {
-                    setTimeout(send_image_via_ftp, 50);
-                }
-            }
-        }
     } catch (e) {
-        setTimeout(send_image_via_ftp, 10);
+        setTimeout(send_image_via_ftp, 100);
     }
 }
 
