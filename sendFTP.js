@@ -105,7 +105,6 @@ function lib_mqtt_connect(broker_ip, port, control) {
 
                     status = 'Start';
                     lib_mqtt_client.publish(my_status_topic, status);
-                    send_image_via_ftp();
                 }
             } else {
                 console.log('From ' + topic + 'message is ' + message.toString());
@@ -183,13 +182,16 @@ async function send_image_via_ftp() {
         fs.readdir('./' + geotagging_dir + '/', (err, files) => {
             if (err) {
             } else {
-                files.forEach(file => {
-                    if (file.includes('.jpg') || file.includes('.JPG')) {
-                        if (!geotagged_arr.includes(file)) {
-                            geotagged_arr.push(file);
-                        }
-                    }
-                });
+                // files.forEach(file => {
+                //     if (file.includes('.jpg') || file.includes('.JPG')) {
+                //         if (!geotagged_arr.includes(file)) {
+                //             geotagged_arr.push(file);
+                //         }
+                //     }
+                // });
+                if (files.length > 0) {
+                    geotagged_arr.push(files[0]);
+                }
             }
         });
 
@@ -198,33 +200,63 @@ async function send_image_via_ftp() {
             await ftp_client.uploadFrom('./' + geotagging_dir + '/' + geotagged_arr[0], "/" + ftp_dir + '/' + geotagged_arr[0]).then(() => {
                 console.timeEnd('ftp');
                 // console.log('send ' + geotagged_arr[0]);
-                setTimeout(move_image, 50, './' + geotagging_dir + '/', './' + ftp_dir + '/', geotagged_arr[0]);
-                status = 'Send ' + count++;
+                setTimeout(move_image, 1, './' + geotagging_dir + '/', './' + ftp_dir + '/', geotagged_arr[0]);
+                //status = 'Send ' + count++;
+                count++;
+                console.log(count);
                 empty_count = 0;
-                lib_mqtt_client.publish(my_status_topic, status);
+                let msg = status + ' ' + count;
+                lib_mqtt_client.publish(my_status_topic, msg);
+
+                setTimeout(send_image_via_ftp, 5);
             });
         } else {
-            if (status.includes('Send')) {
-                status = 'empty';
-            } else if (status === 'empty') {
+            if (status === 'Started') {
                 empty_count++;
+                if (empty_count > 20) {
+                    status = 'Finish';
+                    empty_count = 0;
+                    let msg = status + ' ' + count;
+                    lib_mqtt_client.publish(my_status_topic, msg);
+                } else {
+                    setTimeout(send_image_via_ftp, 100);
+                }
             }
-            console.log(empty_count)
-            if (empty_count > 20) {
-                status = 'Finish ' + (count - 1);
-                empty_count = 0;
-                lib_mqtt_client.publish(my_status_topic, status);
-            }
+
+            // if (status.includes('Send')) {
+            //     status = 'empty';
+            // } else if (status === 'empty') {
+            //     empty_count++;
+            // }
+            // console.log(empty_count)
+            // if (empty_count > 20) {
+            //     status = 'Finish ' + (count - 1);
+            //     empty_count = 0;
+            //     lib_mqtt_client.publish(my_status_topic, status);
+            // }
         }
     } catch (e) {
+        setTimeout(send_image_via_ftp, 10);
     }
-    setTimeout(send_image_via_ftp, 50);
 }
+
+
+let tidEnv = setInterval(() => {
+    // 환경이 구성 되었다. 이제부터 시작한다.
+    if (status === 'Start') {
+        status = 'Started';
+
+        send_image_via_ftp();
+
+        clearInterval(tidEnv);
+    }
+
+}, 1000);
 
 function move_image(from, to, image) {
     try {
         fs.renameSync(from + image, to + image);
-        geotagged_arr.shift();
+        geotagged_arr = [];
     } catch (e) {
         fs.stat(to + image, (err) => {
             console.log(err);
@@ -233,6 +265,6 @@ function move_image(from, to, image) {
             }
             console.log("[sendFTP]이미 처리 후 옮겨진 사진 (" + image + ") 입니다.");
         });
-        geotagged_arr.shift();
+        geotagged_arr = [];
     }
 }
