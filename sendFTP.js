@@ -170,7 +170,7 @@ function send_image_via_ftp() {
                     if (status === 'Started') {
                         empty_count++;
                         console.log('Waiting - ' + empty_count);
-                        if (empty_count > 50) {
+                        if (empty_count > 200) {
                             status = 'Finish';
                             empty_count = 0;
                             let msg = status + ' ' + count;
