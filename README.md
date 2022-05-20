@@ -3,7 +3,7 @@
 ### Installation
 - gphoto2 library
    ```
-   sudo apt-get install gphoto2
+   sudo apt-get install -y gphoto2
    ```
 - package
   ```
