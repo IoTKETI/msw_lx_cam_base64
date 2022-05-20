@@ -109,16 +109,31 @@ function geotag_image() {
             // captured_arr[0] = captured_arr[0].replace(/_/g, ':');
             let gps = gps_filename.findOne({image: captured_arr[0]})._settledValue;
 
-            exifObj.GPS[piexif.GPSIFD.GPSLatitudeRef] = (gps.lat / 10000000) < 0 ? 'S' : 'N';
-            exifObj.GPS[piexif.GPSIFD.GPSLatitude] = Degree2DMS(gps.lat / 10000000);
-            exifObj.GPS[piexif.GPSIFD.GPSLongitudeRef] = (gps.lon / 10000000) < 0 ? 'W' : 'E';
-            exifObj.GPS[piexif.GPSIFD.GPSLongitude] = Degree2DMS(gps.lon / 10000000);
-            // exifObj.GPS[piexif.GPSIFD.GPSAltitude] = Degree2DMS(gps.relative_alt / 1000);
-            if (gps.alt < 0) {
-                gps.alt = 0;
+            if (gps.hasOwnProperty('lat')) {
+                exifObj.GPS[piexif.GPSIFD.GPSLatitudeRef] = (gps.lat / 10000000) < 0 ? 'S' : 'N';
+                exifObj.GPS[piexif.GPSIFD.GPSLatitude] = Degree2DMS(gps.lat / 10000000);
+            } else {
+                exifObj.GPS[piexif.GPSIFD.GPSLatitudeRef] = (gps.lat / 10000000) < 0 ? 'S' : 'N';
+                exifObj.GPS[piexif.GPSIFD.GPSLatitude] = Degree2DMS(gps.lat / 10000000);
             }
-            exifObj.GPS[piexif.GPSIFD.GPSAltitude] = [gps.alt, 1000];
-            exifObj.GPS[piexif.GPSIFD.GPSAltitudeRef] = 0;
+            if (gps.hasOwnProperty('lon')) {
+                exifObj.GPS[piexif.GPSIFD.GPSLongitudeRef] = (gps.lon / 10000000) < 0 ? 'W' : 'E';
+                exifObj.GPS[piexif.GPSIFD.GPSLongitude] = Degree2DMS(gps.lon / 10000000);
+            } else {
+                exifObj.GPS[piexif.GPSIFD.GPSLongitudeRef] = (gps.lon / 10000000) < 0 ? 'W' : 'E';
+                exifObj.GPS[piexif.GPSIFD.GPSLongitude] = Degree2DMS(gps.lon / 10000000);
+            }
+            // exifObj.GPS[piexif.GPSIFD.GPSAltitude] = Degree2DMS(gps.relative_alt / 1000);
+            if (gps.hasOwnProperty('alt')) {
+                if (gps.alt < 0.0) {
+                    gps.alt = 0.0;
+                }
+                exifObj.GPS[piexif.GPSIFD.GPSAltitude] = [gps.alt, 1000];
+                exifObj.GPS[piexif.GPSIFD.GPSAltitudeRef] = 0;
+            } else {
+                exifObj.GPS[piexif.GPSIFD.GPSAltitude] = [0.0, 1000];
+                exifObj.GPS[piexif.GPSIFD.GPSAltitudeRef] = 0;
+            }
 
             let exifbytes = piexif.dump(exifObj);
 
