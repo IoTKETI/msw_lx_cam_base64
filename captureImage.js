@@ -132,19 +132,6 @@ function lib_mqtt_connect(broker_ip, port, fc, control) {
                     interval = command_arr[1];
                     mission = command_arr[2];
 
-                    gps_filename.findOne({name: 'mission_name'}).then(function (u) {
-                        gps_filename.remove(u).then(function () {
-                            gps_filename.insert({
-                                name: 'mission_name',
-                                mission: mission,
-                                drone: drone_name
-                            }).then(function (u) {
-                                console.log('insert mission info');
-                                console.log(u);
-                            });
-                        });
-                    });
-
                     ftp_dir = moment().format('YYYY-MM-DD') + '-' + mission + '_' + drone_name;
                     !fs.existsSync(ftp_dir) && fs.mkdirSync(ftp_dir);
 
