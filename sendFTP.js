@@ -1,15 +1,11 @@
 const fs = require('fs');
 const moment = require("moment");
 const sendFTP = require("basic-ftp");
-// const db = require('node-localdb');
 const {nanoid} = require("nanoid");
 const mqtt = require("mqtt");
 
-// let gps_filename = db('./gps_filename.json');
-
 const my_lib_name = 'lib_lx_cam';
 
-// let prev_mission = 'Empty';
 let mission = '';
 let ftp_dir = '';
 let drone_name = process.argv[3];
@@ -34,8 +30,6 @@ let count = 0;
 init();
 
 function init() {
-    // read_mission();
-
     ftp_connect(ftp_host, ftp_user, ftp_pw);
 
     try {
@@ -117,40 +111,6 @@ function lib_mqtt_connect(broker_ip, port, control) {
     }
 }
 
-// function read_mission() {
-//     try {
-//         let argv = gps_filename.findOne({name: 'mission_name'})._settledValue;
-//         if (argv === undefined) {
-//             setTimeout(read_mission, 500);
-//         } else {
-//             if (argv.hasOwnProperty('mission')) {
-//                 mission = argv.mission;
-//             } else {
-//                 mission = 'Empty';
-//             }
-//             if (argv.hasOwnProperty('drone')) {
-//                 drone_name = argv.drone;
-//             } else {
-//                 drone_name = 'undefined';
-//             }
-//         }
-//
-//         ftp_dir = moment().format('YYYY-MM-DD') + '-' + argv.mission + '_' + argv.drone;
-//
-//         if (prev_mission !== mission) {
-//             if (ftp_client !== null) {
-//                 ftp_client.ensureDir("/" + ftp_dir);
-//             }
-//             prev_mission = mission;
-//         }
-//     } catch (e) {
-//         if (e instanceof TypeError) {
-//             console.log(e)
-//         }
-//     }
-//     setTimeout(read_mission, 1000);
-// }
-
 async function ftp_connect(host, user, pw) {
     ftp_client = new sendFTP.Client(0)
     ftp_client.ftp.verbose = false;
@@ -219,21 +179,9 @@ async function send_image_via_ftp() {
                     let msg = status + ' ' + count;
                     lib_mqtt_client.publish(my_status_topic, msg);
                 } else {
-                    setTimeout(send_image_via_ftp, 100);
+                    setTimeout(send_image_via_ftp, 50);
                 }
             }
-
-            // if (status.includes('Send')) {
-            //     status = 'empty';
-            // } else if (status === 'empty') {
-            //     empty_count++;
-            // }
-            // console.log(empty_count)
-            // if (empty_count > 20) {
-            //     status = 'Finish ' + (count - 1);
-            //     empty_count = 0;
-            //     lib_mqtt_client.publish(my_status_topic, status);
-            // }
         }
     } catch (e) {
         setTimeout(send_image_via_ftp, 10);
