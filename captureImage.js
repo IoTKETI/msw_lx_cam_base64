@@ -1,10 +1,9 @@
 const {nanoid} = require("nanoid");
 const mqtt = require("mqtt");
 const fs = require('fs');
-const exec = require("child_process").exec;
+const {spawn} = require("child_process");
 const moment = require("moment");
 const db = require('node-localdb');
-const kill = require('tree-kill');
 
 let gps_filename = db('./gps_filename.json');
 
@@ -20,7 +19,7 @@ let gpi_topic = '';
 let gpi_data = {};
 
 let capture_command = null;
-let interval = 6;
+let interval = 5;
 let mission = '';
 
 let capture_flag = false;
@@ -28,7 +27,6 @@ let count = 0;
 
 let status = 'Init';
 
-let ftp_dir = '';
 let drone_name = process.argv[2];
 console.log('[captureImage]', drone_name);
 
@@ -59,32 +57,35 @@ function init() {
 
     lib_mqtt_client.publish(my_status_topic, status);
 
-    setTimeout(()=> {
-        let camera_summary = exec("gphoto2 --summary");
+    setTimeout(() => {
+        let camera_test = spawn("gphoto2", ["--summary"]);
+        console.log('Get camera summary to check connection');
 
-        camera_summary.stdout.on('data', (data) => {
+        camera_test.stdout.on('data', (data) => {
             console.log('stdout: ' + data);
-
-            if (data.includes('sufficient quoting around the arguments')) {
-                console.log('Please check the connection with the camera.');
+        });
+        camera_test.stderr.on('data', (data) => {
+            console.log('stderr: ' + data);
+            if (data.includes('gphoto2: not found')) {
+                console.log('Please install gphoto library');
+            } else if (data.includes('PTP Timeout')) {
+                status = 'Please reconnect the camera cable.';
+                lib_mqtt_client.publish(my_status_topic, status);
+            } else if (data.includes('no camera found')) {
+                status = 'Please check the camera.';
+                lib_mqtt_client.publish(my_status_topic, status);
             }
         });
-        camera_summary.stderr.on('data', (data) => {
-            console.log('stderr: ' + data);
-        });
-        camera_summary.on('exit', (code) => {
+        camera_test.on('exit', (code) => {
             console.log('exit: ' + code);
             if (code === 0) {
                 status = 'Ready';
                 lib_mqtt_client.publish(my_status_topic, status);
             }
         });
-        camera_summary.on('error', function (code) {
+        camera_test.on('error', function (code) {
             console.log('error: ' + code);
         });
-        // // TODO: 테스트용 추후 삭제
-        // status = 'Ready';
-        // lib_mqtt_client.publish(my_status_topic, status);
     }, 1000);
 }
 
@@ -127,28 +128,22 @@ function lib_mqtt_connect(broker_ip, port, fc, control) {
             }
             if (topic === control) {
                 if (message.toString().includes('g')) {
-                    console.log(message.toString());
+                    console.log('[Capture command] - ' + message.toString());
                     let command_arr = message.toString().split(' ');
                     interval = command_arr[1];
                     mission = command_arr[2];
 
-                    ftp_dir = moment().format('YYYY-MM-DD') + '-' + mission + '_' + drone_name;
-                    !fs.existsSync(ftp_dir) && fs.mkdirSync(ftp_dir);
-
                     count = 0;
 
-                    if (status !== 'Ready') {
+                    if (status === 'Ready') {
+                        capture_flag = true;
+                    } else {
                         status = 'Check camera..';
                         lib_mqtt_client.publish(my_status_topic, status);
-                    } else {
-                        capture_flag = true;
                     }
-                    // // TODO: 테스트용 추후 삭제
-                    // status = 'Capture';
-                    // lib_mqtt_client.publish(my_status_topic, status);
                 } else if (message.toString() === 's') {
                     if (capture_command !== null) {
-                        kill(capture_command.pid);
+                        process.kill(capture_command.pid, 'SIGINT');
                     }
                     capture_flag = false;
                     status = 'Stop';
@@ -166,14 +161,15 @@ function lib_mqtt_connect(broker_ip, port, fc, control) {
 function capture_image() {
     if (capture_flag) {
         console.time('capture');
-        capture_command = exec("gphoto2 --capture-image-and-download --filename 20%y-%m-%dT%H:%M:%S.jpg --interval " + interval + " --folder ./");
+        // gphoto2 --capture-image-and-download --filename 20%y-%m-%dT%H:%M:%S.jpg --interval 5 --folder ./
+        capture_command = spawn("gphoto2", ['--capture-image-and-download', '--filename', '20%y-%m-%dT%H:%M:%S.jpg', '--interval', interval, '--folder', './']);
 
         capture_command.stdout.on('data', (data) => {
-            // console.log(count++, 'data: ' + data);
+            console.log('data: ' + data);
 
             console.timeEnd('capture');
-            if (data.split('\n')[1].includes('.jpg')) {
-                let data_arr = data.split('\n')[1].split(' ')
+            if (data.toString().split('\n')[1].includes('.jpg')) {
+                let data_arr = data.toString().split('\n')[1].split(' ')
                 for (let idx in data_arr) {
                     if (data_arr[idx].includes('.jpg')) {
                         gpi_data.image = data_arr[idx];
@@ -182,26 +178,38 @@ function capture_image() {
                         lib_mqtt_client.publish(captured_position_topic, JSON.stringify(gpi_data)); // backup gps and image name
                     }
                 }
-                status = 'Capture ' + count++;
-                lib_mqtt_client.publish(my_status_topic, status);
+                status = 'Capture';
+                count++;
+                let msg = status + ' ' + count;
+                lib_mqtt_client.publish(my_status_topic, msg);
             }
+            console.time('capture');
         });
 
         capture_command.stderr.on('data', (data) => {
-            if (data.includes('gphoto2: not found')) {
+            if (data.toString().includes('gphoto2: not found')) {
                 console.log('Please install gphoto library');
-            } else if (data.includes('PTP Cancel')) {
+            } else if (data.toString().includes("Operation cancelled.")) {
                 status = 'Ready';
                 lib_mqtt_client.publish(my_status_topic, status);
-                console.log('Capture process Stop.');
+                console.log('Operation cancelled.');
+            } else if (data.toString().includes('PTP General')) {
+                status = 'Ready';
+                lib_mqtt_client.publish(my_status_topic, status);
+                console.log('Cancelled.');
             } else {
                 console.log('stderr: ' + data);
             }
         });
 
         capture_command.on('exit', (code) => {
-            console.log(count++, 'exit: ' + code);
+            console.log(count, 'exit: ' + code);
+
             console.timeEnd('capture');
+            if (code === null) {
+                status = 'Ready';
+                lib_mqtt_client.publish(my_status_topic, status);
+            }
         });
 
         capture_command.on('error', (code) => {
@@ -210,12 +218,12 @@ function capture_image() {
     }
 }
 
-var tid = setInterval(() => {
-    if (capture_flag) {
-        clearInterval(tid);
-        capture_image();
-        // // TODO: 테스트용 추후 삭제
-        // console.log('capture');
+setInterval(() => {
+    if (status === 'Ready') {
+        if (capture_flag) {
+            // clearInterval(tid);
+            capture_image();
+        }
     }
 }, interval * 1000);
 
