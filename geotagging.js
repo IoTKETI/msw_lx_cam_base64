@@ -93,7 +93,8 @@ function lib_mqtt_connect(broker_ip, port) {
                     "vz": _gps_data.vz,
                     "hdg": _gps_data.hdg,
                     "relative_alt": _gps_data.relative_alt
-                }
+                };
+                console.log(_gps_data.image, '\n', gps_data[_gps_data.image]);
             } else {
                 console.log('From ' + topic + 'message is ' + message.toString());
             }
