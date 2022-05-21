@@ -19,6 +19,7 @@ const fs = require('fs');
 const spawn = require('child_process').spawn;
 const {nanoid} = require('nanoid');
 const util = require("util");
+const moment = require('moment');
 
 global.sh_man = require('./http_man');
 
@@ -29,8 +30,6 @@ let config = {};
 
 config.name = my_msw_name;
 global.drone_info = '';
-
-let send_position_image = null;
 
 try {
     drone_info = JSON.parse(fs.readFileSync('../drone_info.json', 'utf8'));
@@ -80,6 +79,9 @@ let msw_sub_lib_topic = [];
 
 function init() {
     clearInterval(send_position_image);
+
+    organize_image_folder();
+
     if (config.lib.length > 0) {
         for (let idx in config.lib) {
             if (config.lib.hasOwnProperty(idx)) {
@@ -336,7 +338,7 @@ function parseFcData(topic, str_message) {
     }
 }
 
-send_position_image = setInterval(() => {
+let send_position_image = setInterval(() => {
     if (data_msg_arr.length > 0) {
         sh_man.crtci(data_msg_arr[0][0] + '?rcn=0', 0, data_msg_arr[0][1], null, function (rsc, res_body, parent, socket) {
             if (rsc === 2001) {
@@ -345,3 +347,29 @@ send_position_image = setInterval(() => {
         });
     }
 }, 1000);
+
+let image_folder_arr = [];
+
+function organize_image_folder() {
+    fs.readdirSync('./').forEach(file => {
+        if (!file.includes('.') && file.includes('-')) {
+            // console.log(file);
+            image_folder_arr.push(file);
+        }
+    });
+    image_folder_arr.forEach(dir => {
+        let cur_date = moment()
+        let dir_date = moment(dir.substring(0, 10), 'YYYY-MM-DD');
+
+        let duration = parseInt(moment.duration(cur_date.diff(dir_date)).asDays());
+        if (duration > 30) { // 30일 이상인 폴더 삭제
+            fs.rmdir(dir, { recursive: true }, (err) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log(`${dir} is deleted!`);
+                }
+            });
+        }
+    });
+}
