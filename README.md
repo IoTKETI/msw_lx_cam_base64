@@ -1,5 +1,11 @@
 # msw_lx_cam
 
+### Configuration
+- Set timezone 
+  ```
+  sudo timedatectl set-timezone Asia/Seoul
+  ```
+
 ### Installation
 - gphoto2 library
    ```
