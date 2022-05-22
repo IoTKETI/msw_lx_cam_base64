@@ -2,9 +2,9 @@ const {nanoid} = require("nanoid");
 const mqtt = require("mqtt");
 const fs = require('fs');
 const {spawn} = require("child_process");
-// const db = require('node-localdb');
+const db = require('node-localdb');
 
-// let gps_filename = db('./gps_filename.json');
+let gps_filename = db('./gps_filename.json');
 
 const my_lib_name = 'lib_lx_cam';
 
@@ -173,7 +173,7 @@ function capture_image() {
                     if (data_arr[idx].includes('.jpg')) {
                         gpi_data.image = data_arr[idx];
 
-                        // gps_filename.insert(gpi_data);
+                        gps_filename.insert(gpi_data);
                         lib_mqtt_client.publish('/global_position_int', JSON.stringify(gpi_data)); // backup gps and image name
                         lib_mqtt_client.publish(captured_position_topic, JSON.stringify(gpi_data)); // backup gps and image name
                     }
