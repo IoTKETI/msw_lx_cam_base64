@@ -3,7 +3,9 @@ const piexif = require("piexifjs");
 const moment = require("moment");
 const {nanoid} = require("nanoid");
 const mqtt = require("mqtt");
+const db = require('node-localdb');
 
+let gps_filename = db('./gps_filename.json');
 
 const my_lib_name = 'lib_lx_cam';
 
@@ -181,7 +183,7 @@ function geotag_image() {
                 let data = jpeg.toString("binary");
 
                 let exifObj = piexif.load(data);
-                // captured_arr[0] = captured_arr[0].replace(/_/g, ':');
+
                 // let gps = gps_filename.findOne({image: edit_file})._settledValue;
                 let gps = gps_data;
                 if (gps.hasOwnProperty(captured_arr[0])) {
@@ -197,7 +199,6 @@ function geotag_image() {
                     } else {
                         exifObj.GPS[piexif.GPSIFD.GPSLongitude] = Degree2DMS(0.0);
                     }
-                    // exifObj.GPS[piexif.GPSIFD.GPSAltitude] = Degree2DMS(gps.relative_alt / 1000);
                     if (gps.hasOwnProperty('alt')) {
                         if (gps.alt < 0.0) {
                             gps.alt = 0.0;
