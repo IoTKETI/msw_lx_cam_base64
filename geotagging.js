@@ -113,7 +113,10 @@ function geotag_image() {
         fs.readdir('./', (err, files) => {
             if (err) {
                 console.log('[' + geotagging_dir + '] is empty directory..');
-            } else {
+
+                setTimeout(geotag_image, 100);
+            }
+            else {
                 files = files.filter(file => file.toLowerCase().includes('.jpg'))
 
                 if (files.length > 0) {
@@ -158,9 +161,11 @@ function geotag_image() {
                     let newJpeg = Buffer.from(newData, "binary");
 
                     fs.writeFileSync(captured_arr[0], newJpeg);
-                    setTimeout(move_image, 1000, './', './' + geotagging_dir + '/', captured_arr[0], 'geo');
+                    setTimeout(move_image, 1, './', './' + geotagging_dir + '/', captured_arr[0], 'geo');
 
                     console.timeEnd('geotag');
+
+                    setTimeout(geotag_image, 100);
                     // if (gps_data.hasOwnProperty(captured_arr[0])) {
                     //     let gps = gps_data[captured_arr[0]];
                     //     console.log(gps)
@@ -279,9 +284,11 @@ function geotag_image() {
                     let newJpeg = Buffer.from(newData, "binary");
 
                     fs.writeFileSync(captured_arr[0], newJpeg);
-                    setTimeout(move_image, 1000, './', './' + geotagging_dir + '/', captured_arr[0], 'geo');
+                    setTimeout(move_image, 1, './', './' + geotagging_dir + '/', captured_arr[0], 'geo');
 
                     console.timeEnd('geotag');
+
+                    setTimeout(geotag_image, 100);
                 } else {
                     setTimeout(geotag_image, 100);
                 }
@@ -289,6 +296,7 @@ function geotag_image() {
                 console.log('ENOENT: no such file or directory, open ' + captured_arr[0]);
                 captured_arr = [];
 
+                setTimeout(geotag_image, 100);
             }
         } else {
             setTimeout(geotag_image, 100);
@@ -321,7 +329,6 @@ function move_image(from, to, image) {
         let msg = status + ' ' + count;
         lib_mqtt_client.publish(my_status_topic, msg);
         captured_arr = [];
-        setTimeout(geotag_image, 5);
     } catch (e) {
         fs.stat(to + image, (err) => {
             if (err !== null && err.code === "ENOENT") {
@@ -330,6 +337,5 @@ function move_image(from, to, image) {
             console.log("[geotagging] 이미 처리 후 옮겨진 사진 (" + image + ") 입니다.");
         });
         captured_arr = [];
-        setTimeout(geotag_image, 5);
     }
 }
