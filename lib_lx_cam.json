@@ -7,7 +7,8 @@
         "Capture_Status",
         "Geotag_Status",
         "FTP_Status",
-        "Captured_GPS"
+        "Captured_GPS",
+        "Geotagged_GPS"
     ],
     "control": [
         "Capture"
