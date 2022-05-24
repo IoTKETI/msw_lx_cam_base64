@@ -20,6 +20,10 @@ const spawn = require('child_process').spawn;
 const {nanoid} = require('nanoid');
 const util = require("util");
 const moment = require('moment');
+const os = require('os');
+
+let total = os.totalmem();
+let free = os.freemem();
 
 global.sh_man = require('./http_man');
 
@@ -32,7 +36,7 @@ config.name = my_msw_name;
 global.drone_info = '';
 
 try {
-    drone_info = JSON.parse(fs.readFileSync('../drone_info.json', 'utf8'));
+    drone_info = JSON.parse(fs.readFileSync('./drone_info.json', 'utf8'));
 
     config.directory_name = my_msw_name + '_' + my_msw_name;
     // config.sortie_name = '/' + sortie_name;
@@ -58,7 +62,7 @@ try {
         target: 'armv7l',
         description: '[name] [server]',
         scripts: "sh lib_lx_cam.sh",
-        data: ["Capture_Status", "Geotag_Status", "FTP_Status", "Captured_GPS"],
+        data: ["Capture_Status", "Geotag_Status", "FTP_Status", "Captured_GPS", "Geotagged_GPS"],
         control: ['Capture']
     };
     config.lib.push(add_lib);
@@ -348,28 +352,40 @@ let send_position_image = setInterval(() => {
     }
 }, 1000);
 
-let image_folder_arr = [];
+function byteToMB(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
 
 function organize_image_folder() {
-    fs.readdirSync('./').forEach(file => {
-        if (!file.includes('.') && file.includes('-')) {
-            // console.log(file);
-            image_folder_arr.push(file);
-        }
-    });
-    image_folder_arr.forEach(dir => {
-        let cur_date = moment()
-        let dir_date = moment(dir.substring(0, 10), 'YYYY-MM-DD');
+    let free_per = (free / total * 100).toFixed(2);
+    console.log('Free Memory - ' + free_per + '%');
 
-        let duration = parseInt(moment.duration(cur_date.diff(dir_date)).asDays());
-        if (duration > 30) { // 30일 이상인 폴더 삭제
-            fs.rmdir(dir, { recursive: true }, (err) => {
-                if (err) {
-                    console.log(err);
-                } else {
-                    console.log(`${dir} is deleted!`);
+    let directory = [];
+    if (free_per < 10) {
+        // TODO: 외장 메모리 확인 및 삭제?
+        fs.readdirSync('./', {withFileTypes: true}).forEach(p => {
+            let dir = p.name;
+            if (p.name.includes('-')) {
+                if (p.isDirectory()) {
+                    directory.push(dir);
                 }
-            });
-        }
-    });
+            }
+        });
+        fs.rmdir(directory[0], { recursive: true }, (err) => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(directory[0] + " Deleted!");
+            }
+        });
+        setTimeout(organize_image_folder, 5);
+    }
 }
