@@ -41,7 +41,7 @@ function init() {
         lib.target = 'armv7l';
         lib.description = "[name]";
         lib.scripts = './' + my_lib_name;
-        lib.data = ["Capture_Status", "Geotag_Status", "FTP_Status", "Captured_GPS"];
+        lib.data = ["Capture_Status", "Geotag_Status", "FTP_Status", "Captured_GPS", "Geotagged_GPS"];
         lib.control = ['Capture'];
 
         fs.writeFileSync('./' + my_lib_name + '.json', JSON.stringify(lib, null, 4), 'utf8');
@@ -174,7 +174,6 @@ function capture_image() {
                         gpi_data.image = data_arr[idx];
 
                         gps_filename.insert(gpi_data);
-                        lib_mqtt_client.publish('/global_position_int', JSON.stringify(gpi_data)); // backup gps and image name
                         lib_mqtt_client.publish(captured_position_topic, JSON.stringify(gpi_data)); // backup gps and image name
                     }
                 }
@@ -197,6 +196,19 @@ function capture_image() {
                 status = 'Ready';
                 lib_mqtt_client.publish(my_status_topic, status);
                 console.log('Cancelled.');
+            } else if (data.toString().includes('You need to specify a folder starting with')) {
+                status = 'Error';
+                let msg = status + ' - Board Memory Full';
+                lib_mqtt_client.publish(my_status_topic, msg);
+                console.log(msg);
+            } else if (data.toString().includes('Could not capture image')) {
+                status = 'Error';
+                let msg = status + ' - Could not capture';
+                lib_mqtt_client.publish(my_status_topic, msg);
+                console.log(msg);
+                process.kill(capture_command.pid, 'SIGINT');
+                capture_image();
+                // TODO: 재실행 되는지 확인
             } else {
                 console.log('stderr: ' + data);
             }
@@ -215,6 +227,24 @@ function capture_image() {
         capture_command.on('error', (code) => {
             console.log('error: ' + code);
         });
+        // console.time('capture');
+        // gps_filename.insert(gpi_data);
+        // lib_mqtt_client.publish(captured_position_topic, JSON.stringify(gpi_data));
+        // console.timeEnd('capture');
+        // status = 'Capture';
+        // count++;
+        // let msg = status + ' ' + count;
+        // lib_mqtt_client.publish(my_status_topic, msg);
+        // setInterval(() => {
+        //     console.time('capture');
+        //     gps_filename.insert(gpi_data);
+        //     lib_mqtt_client.publish(captured_position_topic, JSON.stringify(gpi_data));
+        //     console.timeEnd('capture');
+        //     status = 'Capture';
+        //     count++;
+        //     let msg = status + ' ' + count;
+        //     lib_mqtt_client.publish(my_status_topic, msg);
+        // }, interval * 1000);
     }
 }
 
