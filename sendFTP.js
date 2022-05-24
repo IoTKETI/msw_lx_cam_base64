@@ -41,7 +41,7 @@ function init() {
         lib.target = 'armv7l';
         lib.description = "[name]";
         lib.scripts = './' + my_lib_name;
-        lib.data = ["Capture_Status", "Geotag_Status", "FTP_Status", "Captured_GPS"];
+        lib.data = ["Capture_Status", "Geotag_Status", "FTP_Status", "Captured_GPS", "Geotagged_GPS"];
         lib.control = ['Capture'];
 
         fs.writeFileSync('./' + my_lib_name + '.json', JSON.stringify(lib, null, 4), 'utf8');
@@ -85,20 +85,22 @@ function lib_mqtt_connect(broker_ip, port, control) {
         lib_mqtt_client.on('message', function (topic, message) {
             if (topic === control) {
                 if (message.toString().includes('g')) {
-                    console.log(message.toString());
-                    let command_arr = message.toString().split(' ');
-                    mission = command_arr[2];
+                    if (status === 'Init' || status === 'Finish') {
+                        console.log(message.toString());
+                        let command_arr = message.toString().split(' ');
+                        mission = command_arr[2];
 
-                    ftp_dir = moment().format('YYYY-MM-DD') + '-' + mission + '_' + drone_name;
-                    !fs.existsSync(ftp_dir) && fs.mkdirSync(ftp_dir);
+                        ftp_dir = moment().format('YYYY-MM-DD') + '-' + mission + '_' + drone_name;
+                        !fs.existsSync(ftp_dir) && fs.mkdirSync(ftp_dir);
 
-                    ftp_client.ensureDir("/" + ftp_dir);
-                    console.log('[ftp_lib_mqtt] Create ( ' + ftp_dir + ' ) directory')
+                        ftp_client.ensureDir("/" + ftp_dir);
+                        console.log('[ftp_lib_mqtt] Create ( ' + ftp_dir + ' ) directory')
 
-                    count = 0;
+                        count = 0;
 
-                    status = 'Start';
-                    lib_mqtt_client.publish(my_status_topic, status);
+                        status = 'Start';
+                        lib_mqtt_client.publish(my_status_topic, status);
+                    }
                 }
             } else {
                 console.log('From ' + topic + 'message is ' + message.toString());
@@ -110,6 +112,8 @@ function lib_mqtt_connect(broker_ip, port, control) {
         });
     }
 }
+
+let directory = [];
 
 async function ftp_connect(host, user, pw) {
     ftp_client = new sendFTP.Client(0)
@@ -125,9 +129,31 @@ async function ftp_connect(host, user, pw) {
         if (ftp_dir !== '') {
             ftp_client.ensureDir("/" + ftp_dir);
             console.log('Connect FTP server to ' + host);
-            console.log('Create ( ' + ftp_dir + ' ) directory')
+            console.log('Create ( ' + ftp_dir + ' ) directory');
         } else {
             console.log('Connect FTP server to ' + host);
+            fs.readdir('./' + geotagging_dir + '/', (err, files) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    if (files.length > 0) {
+                        fs.readdirSync('./', {withFileTypes: true}).forEach(p => {
+                            let dir = p.name;
+                            if (p.name.includes('-')){
+                                if (p.isDirectory()) {
+                                    directory.push(dir);
+                                }
+                            }
+                        });
+                        ftp_dir = directory[directory.length - 1];
+                        console.log('FTP directory is ' + ftp_dir);
+                        status = 'Start';
+                        lib_mqtt_client.publish(my_status_topic, status);
+                    } else {
+                        console.log('Geotagged directory is empty');
+                    }
+                }
+            });
         }
     } catch (err) {
         console.log('[FTP] Error\n', err)
@@ -141,25 +167,20 @@ function send_image_via_ftp() {
     try {
         fs.readdir('./' + geotagging_dir + '/', (err, files) => {
             if (err) {
+                console.log(err);
+                setTimeout(send_image_via_ftp, 50);
             } else {
-                // files.forEach(file => {
-                //     if (file.includes('.jpg') || file.includes('.JPG')) {
-                //         if (!geotagged_arr.includes(file)) {
-                //             geotagged_arr.push(file);
-                //         }
-                //     }
-                // });
                 if (files.length > 0) {
                     geotagged_arr.push(files[0]);
 
                     console.time('ftp');
                     ftp_client.uploadFrom('./' + geotagging_dir + '/' + geotagged_arr[0], "/" + ftp_dir + '/' + geotagged_arr[0]).then(() => {
                         console.timeEnd('ftp');
-                        // console.log('send ' + geotagged_arr[0]);
+                        // TODO: 외장 메모리에 저장하도록 수정
                         setTimeout(move_image, 1, './' + geotagging_dir + '/', './' + ftp_dir + '/', geotagged_arr[0]);
-                        //status = 'Send ' + count++;
+
                         count++;
-                        console.log(count);
+
                         empty_count = 0;
                         let msg = status + ' ' + count;
                         lib_mqtt_client.publish(my_status_topic, msg);
@@ -175,6 +196,7 @@ function send_image_via_ftp() {
                             empty_count = 0;
                             let msg = status + ' ' + count;
                             lib_mqtt_client.publish(my_status_topic, msg);
+
                         } else {
                             setTimeout(send_image_via_ftp, 50);
                         }
@@ -184,24 +206,18 @@ function send_image_via_ftp() {
                 }
             }
         });
-
-
     } catch (e) {
         setTimeout(send_image_via_ftp, 100);
     }
 }
 
-
-let tidEnv = setInterval(() => {
+setInterval(() => {
     // 환경이 구성 되었다. 이제부터 시작한다.
     if (status === 'Start') {
         status = 'Started';
 
         send_image_via_ftp();
-
-        clearInterval(tidEnv);
     }
-
 }, 1000);
 
 function move_image(from, to, image) {
