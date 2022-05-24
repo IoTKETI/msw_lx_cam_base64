@@ -85,7 +85,7 @@ function init() {
         camera_test.on('error', function (code) {
             console.log('error: ' + code);
         });
-    }, 1000);
+    }, 100);
 }
 
 function lib_mqtt_connect(broker_ip, port, fc, control) {
@@ -207,7 +207,7 @@ function capture_image() {
                 lib_mqtt_client.publish(my_status_topic, msg);
                 console.log(msg);
                 process.kill(capture_command.pid, 'SIGINT');
-                capture_image();
+                setTimeout(capture_image, 100);
                 // TODO: 재실행 되는지 확인
             } else {
                 console.log('stderr: ' + data);
