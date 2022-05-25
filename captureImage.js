@@ -161,7 +161,7 @@ function capture_image() {
     if (capture_flag) {
         console.time('capture');
         // gphoto2 --capture-image-and-download --filename 20%y-%m-%dT%H:%M:%S.jpg --interval 5 --folder ./
-        capture_command = spawn("gphoto2", ['--capture-image-and-download', '--filename', '20%y-%m-%dT%H:%M:%S.jpg', '--interval', interval, '--folder', './']);
+        capture_command = spawn("gphoto2", ['--capture-image-and-download', '--filename', '20%y-%m-%dT%H_%M_%S.jpg', '--interval', interval, '--folder', './']);
 
         capture_command.stdout.on('data', (data) => {
             console.log('data: ' + data);
