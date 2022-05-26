@@ -19,11 +19,6 @@ const fs = require('fs');
 const spawn = require('child_process').spawn;
 const {nanoid} = require('nanoid');
 const util = require("util");
-const moment = require('moment');
-const os = require('os');
-
-let total = os.totalmem();
-let free = os.freemem();
 
 global.sh_man = require('./http_man');
 
@@ -298,8 +293,6 @@ setTimeout(init, 1000);
 
 // 유저 디파인 미션 소프트웨어 기능
 ///////////////////////////////////////////////////////////////////////////////
-let data_msg_arr = [];
-
 function parseDataMission(topic, str_message) {
     try {
         // let obj_lib_data = JSON.parse(str_message);
@@ -312,9 +305,6 @@ function parseDataMission(topic, str_message) {
         let data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + topic_arr[topic_arr.length - 1];
         msw_mqtt_client.publish(data_topic, str_message);
         sh_man.crtci(data_topic + '?rcn=0', 0, str_message, null, function (rsc, res_body, parent, socket) {
-            if (rsc !== 2001) {
-                data_msg_arr.push(data_topic, str_message);
-            }
         });
     } catch (e) {
         console.log('[parseDataMission] data format of lib is not json');
@@ -340,26 +330,4 @@ function parseFcData(topic, str_message) {
         local_msw_mqtt_client.publish(_topic, str_message);
     } else {
     }
-}
-
-let send_position_image = setInterval(() => {
-    if (data_msg_arr.length > 0) {
-        sh_man.crtci(data_msg_arr[0][0] + '?rcn=0', 0, data_msg_arr[0][1], null, function (rsc, res_body, parent, socket) {
-            if (rsc === 2001) {
-                data_msg_arr.shift();
-            }
-        });
-    }
-}, 1000);
-
-function byteToMB(bytes, decimals = 2) {
-    if (bytes === 0) return '0 Bytes';
-
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
