@@ -77,10 +77,6 @@ msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + 
 let msw_sub_lib_topic = [];
 
 function init() {
-    clearInterval(send_position_image);
-
-    // organize_image_folder();
-
     if (config.lib.length > 0) {
         for (let idx in config.lib) {
             if (config.lib.hasOwnProperty(idx)) {
