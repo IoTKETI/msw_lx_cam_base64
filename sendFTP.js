@@ -17,7 +17,6 @@ let ftp_user = 'lx_ftp';
 let ftp_pw = 'lx123!';
 
 let geotagging_dir = 'Geotagged';
-let geotagged_arr = [];
 
 let lib = {};
 
@@ -215,35 +214,24 @@ async function ftp_connect(host, user, pw) {
             port: 50023
         })
 
-        if (ftp_dir !== '') {
-            ftp_client.ensureDir("/" + ftp_dir);
-            console.log('Connect FTP server to ' + host);
-            console.log('Create ( ' + ftp_dir + ' ) directory');
-        } else {
-            console.log('Connect FTP server to ' + host);
-            fs.readdir('./' + geotagging_dir + '/', (err, files) => {
-                if (err) {
-                    console.log(err);
+        ftp_client.ensureDir("/" + ftp_dir);
+        console.log('Connect FTP server to ' + host);
+        console.log('Create ( ' + ftp_dir + ' ) directory');
+
+        fs.readdir('./' + geotagging_dir + '/', (err, files) => {
+            if (err) {
+                console.log(err);
+            } else {
+                if (files.length > 0) {
+
+                    console.log('FTP directory is ' + ftp_dir);
+                    status = 'Start';
+                    lib_mqtt_client.publish(my_status_topic, status);
                 } else {
-                    if (files.length > 0) {
-                        fs.readdirSync('./', {withFileTypes: true}).forEach(p => {
-                            let dir = p.name;
-                            if (p.name.includes('FTP-')) {
-                                if (p.isDirectory()) {
-                                    directory.push(dir);
-                                }
-                            }
-                        });
-                        ftp_dir = directory[directory.length - 1];
-                        console.log('FTP directory is ' + ftp_dir);
-                        status = 'Start';
-                        lib_mqtt_client.publish(my_status_topic, status);
-                    } else {
-                        console.log('Geotagged directory is empty');
-                    }
+                    console.log('Geotagged directory is empty');
                 }
-            });
-        }
+            }
+        });
     } catch (err) {
         console.log('[FTP] Error\n', err)
         console.log('FTP connection failed');
@@ -260,12 +248,10 @@ function send_image_via_ftp() {
                 setTimeout(send_image_via_ftp, 50);
             } else {
                 if (files.length > 0) {
-                    geotagged_arr.push(files[0]);
-
                     console.time('ftp');
-                    ftp_client.uploadFrom('./' + geotagging_dir + '/' + geotagged_arr[0], "/" + ftp_dir + '/' + geotagged_arr[0]).then(() => {
+                    ftp_client.uploadFrom('./' + geotagging_dir + '/' + files[0], "/" + ftp_dir + '/' + files[0]).then(() => {
                         console.timeEnd('ftp');
-                        setTimeout(move_image, 1, './' + geotagging_dir + '/', memory_dir + '/', geotagged_arr[0]);
+                        setTimeout(move_image, 1, './' + geotagging_dir + '/', external_memory + '/' + ftp_dir + '/', files[0]);
 
                         count++;
 
@@ -312,9 +298,9 @@ function move_image(from, to, image) {
     try {
         // fs.renameSync(from + image, to + image);
         fs.copyFile(from + image, to + image, (err) => {
+            fs.unlink(from + image, (err) => {
+            });
         });
-        fs.unlink(from + image, (err) => {});
-        geotagged_arr = [];
     } catch (e) {
         console.log(e);
         fs.stat(to + image, (err) => {
@@ -324,6 +310,5 @@ function move_image(from, to, image) {
             }
             console.log("[sendFTP]이미 처리 후 옮겨진 사진 (" + image + ") 입니다.");
         });
-        geotagged_arr = [];
     }
 }
