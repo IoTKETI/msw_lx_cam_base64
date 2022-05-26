@@ -36,7 +36,7 @@ config.name = my_msw_name;
 global.drone_info = '';
 
 try {
-    drone_info = JSON.parse(fs.readFileSync('./drone_info.json', 'utf8'));
+    drone_info = JSON.parse(fs.readFileSync('../drone_info.json', 'utf8'));
 
     config.directory_name = my_msw_name + '_' + my_msw_name;
     // config.sortie_name = '/' + sortie_name;
@@ -363,29 +363,3 @@ function byteToMB(bytes, decimals = 2) {
 
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
-
-// function organize_image_folder() {
-//     let free_per = (free / total * 100).toFixed(2);
-//     console.log('Free Memory - ' + free_per + '%');
-//
-//     let directory = [];
-//     if (free_per < 10) {
-//         // TODO: 외장 메모리 확인 및 삭제?
-//         fs.readdirSync('./', {withFileTypes: true}).forEach(p => {
-//             let dir = p.name;
-//             if (p.name.includes('-')) {
-//                 if (p.isDirectory()) {
-//                     directory.push(dir);
-//                 }
-//             }
-//         });
-//         fs.rmdir(directory[0], { recursive: true }, (err) => {
-//             if (err) {
-//                 console.log(err);
-//             } else {
-//                 console.log(directory[0] + " Deleted!");
-//             }
-//         });
-//         setTimeout(organize_image_folder, 5);
-//     }
-// }

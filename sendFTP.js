@@ -9,6 +9,7 @@ const my_lib_name = 'lib_lx_cam';
 let mission = '';
 let ftp_dir = '';
 let drone_name = process.argv[3];
+let memory_dir = '';
 
 let ftp_client = null;
 let ftp_host = process.argv[2];
@@ -36,15 +37,33 @@ function init() {
         let dir = p.name;
         if (p.isDirectory()) {
             external_memory += dir;
-            console.log('외장 메모리 이름 : ' + external_memory);
-            // TODO: 남은 메모리 확인
+            console.log('외장 메모리 경로 : ' + external_memory);
+
             let check_memory = spawn('df', ['-h']);
 
             check_memory.stdout.on('data', (data) => {
-                console.log('stdout: ' + data);
-                // data.toString().split('\n').forEach((list)=>{
-                //     if (list.includes())
-                // })
+                // console.log('stdout: ' + data);
+                data.toString().split('\n').forEach((list) => {
+                    if (list.includes(external_memory)) {
+                        list.split(' ').forEach((d) => {
+                            if (d.includes('%')) {
+                                console.log('Free memory in ' + external_memory + ' - ' + d);
+                                if ((100 - parseInt(d.substring(0, d.length - 1))) <= 10) {
+                                    if (directorysInExMem.length > 0) {
+                                        console.log(external_memory + '/' + directorysInExMem[0]);
+                                        fs.rmdir(external_memory + '/' + directorysInExMem[0], {recursive: true}, (err) => {
+                                            if (err) {
+                                                console.log(err);
+                                            } else {
+                                                console.log(external_memory + '/' + directorysInExMem[0] + " Deleted!");
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    }
+                })
             });
             check_memory.stderr.on('data', (data) => {
                 console.log('stderr: ' + data);
@@ -63,15 +82,22 @@ function init() {
                 if (p.name.includes('FTP-')) {
                     if (p.isDirectory()) {
                         directorysInExMem.push(dir);
-                        console.log('사진 폴더 : ' + directorysInExMem);
                     }
                 }
             });
             // 조회한 사진 폴더 중 최근 폴더를 FTP 폴더로 설정
             if (directorysInExMem.length > 0) {
-                ftp_dir = external_memory + '/' + directorysInExMem[directorysInExMem.length - 1];
+                ftp_dir = directorysInExMem[directorysInExMem.length - 1];
+                console.log('외장메모리의 마지막 사진 폴더 : ' + ftp_dir);
+                // ftp_dir = external_memory + '/' + ftp_dir;
+                console.log('외장메모리의 마지막 사진 폴더 경로 : ' + external_memory + '/' + ftp_dir);
             }
-            console.log('외장메모리의 마지막 사진 폴더 이름 : ' + ftp_dir);
+            // 외장메모리가 있지만 사진 폴더가 없을 경우 미션 수신 대기
+            else {
+                // ftp_dir = external_memory;
+                // console.log(ftp_dir);
+                console.log('외장메모리의 마지막 사진 폴더 경로 : ' + external_memory);
+            }
         }
     });
 
@@ -80,7 +106,6 @@ function init() {
         let directorys = [];
         fs.readdirSync('./', {withFileTypes: true}).forEach(p => {
             let dir = p.name;
-            console.log(p)
             if (p.name.includes('FTP-')) {
                 if (p.isDirectory()) {
                     directorys.push(dir);
@@ -88,10 +113,7 @@ function init() {
             }
         });
         ftp_dir = './' + directorys[directorys.length - 1];
-        console.log('보드의 마지막 사진 폴더 이름 : ' + ftp_dir);
-    } else {  // 외장메모리가 있지만 사진 폴더가 없을 경우 미션 수신 대기
-        ftp_dir = external_memory;
-        console.log(ftp_dir);
+        console.log('보드에서 마지막 사진 폴더 이름 : ' + ftp_dir);
     }
 
     ftp_connect(ftp_host, ftp_user, ftp_pw);
@@ -154,11 +176,14 @@ function lib_mqtt_connect(broker_ip, port, control) {
                         let command_arr = message.toString().split(' ');
                         mission = command_arr[2];
 
-                        ftp_dir = ftp_dir + '/FTP-' + moment().format('YYYY-MM-DD') + '-' + mission + '_' + drone_name;
-                        !fs.existsSync(ftp_dir) && fs.mkdirSync(ftp_dir);
-
+                        ftp_dir = 'FTP-' + moment().format('YYYY-MM-DD') + '-' + mission + '_' + drone_name;
                         ftp_client.ensureDir("/" + ftp_dir);
-                        console.log('[ftp_lib_mqtt] Create ( ' + ftp_dir + ' ) directory')
+                        if (external_memory !== '/media/pi/') {
+                            memory_dir = external_memory + '/' + ftp_dir;
+                        }
+                        !fs.existsSync(memory_dir) && fs.mkdirSync(memory_dir);
+
+                        console.log('[ftp_lib_mqtt] Create ( ' + memory_dir + ' ) directory')
 
                         count = 0;
 
@@ -240,8 +265,7 @@ function send_image_via_ftp() {
                     console.time('ftp');
                     ftp_client.uploadFrom('./' + geotagging_dir + '/' + geotagged_arr[0], "/" + ftp_dir + '/' + geotagged_arr[0]).then(() => {
                         console.timeEnd('ftp');
-                        // TODO: 외장 메모리에 저장하도록 수정
-                        setTimeout(move_image, 1, './' + geotagging_dir + '/', './' + ftp_dir + '/', geotagged_arr[0]);
+                        setTimeout(move_image, 1, './' + geotagging_dir + '/', memory_dir + '/', geotagged_arr[0]);
 
                         count++;
 
@@ -286,9 +310,13 @@ setInterval(() => {
 
 function move_image(from, to, image) {
     try {
-        fs.renameSync(from + image, to + image);
+        // fs.renameSync(from + image, to + image);
+        fs.copyFile(from + image, to + image, (err) => {
+        });
+        fs.unlink(from + image, (err) => {});
         geotagged_arr = [];
     } catch (e) {
+        console.log(e);
         fs.stat(to + image, (err) => {
             console.log(err);
             if (err !== null && err.code === "ENOENT") {
