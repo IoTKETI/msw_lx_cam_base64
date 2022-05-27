@@ -179,6 +179,10 @@ function capture_image() {
                     gpi_data.image = data_arr[idx];
 
                     gps_filename.insert(gpi_data);
+                    if (gpi_data.hasOwnProperty('_id')){
+                            delete gpi_data._id;
+                        }
+                    lib_mqtt_client.publish(captured_position_topic, JSON.stringify(gpi_data));
                     break;
                 }
             }

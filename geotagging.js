@@ -171,6 +171,9 @@ function geotag_image() {
 
                 fs.writeFileSync(files[0], newJpeg);
                 setTimeout(move_image, 1, './', './' + geotagging_dir + '/', files[0]);
+                if (gps.hasOwnProperty('_id')) {
+                    delete gps._id;
+                }
                 lib_mqtt_client.publish(geotagged_position_topic, JSON.stringify(gps));
 
                 console.timeEnd('geotag');
