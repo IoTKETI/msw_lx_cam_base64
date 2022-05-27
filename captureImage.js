@@ -210,15 +210,13 @@ function capture_image() {
             let msg = status + ' - Board Memory Full';
             lib_mqtt_client.publish(my_status_topic, msg);
             process.kill(capture_command.pid, 'SIGINT');
-        } else if (data.toString().includes('Could not capture image')) {
+        } else {
+            console.log('stderr: ' + data);
             status = 'Error';
-            let msg = status + ' - Could not capture';
+            let msg = status + ' - ' + data;
             lib_mqtt_client.publish(my_status_topic, msg);
             process.kill(capture_command.pid, 'SIGINT');
             setTimeout(capture_image, 100);
-            // TODO: 재실행 되는지 확인
-        } else {
-            console.log('stderr: ' + data);
         }
     });
 
