@@ -43,8 +43,6 @@ function init() {
         lib.scripts = './' + my_lib_name;
         lib.data = ["Capture_Status", "Geotag_Status", "FTP_Status", "Captured_GPS", "Geotagged_GPS"];
         lib.control = ['Capture'];
-
-        fs.writeFileSync('./' + my_lib_name + '.json', JSON.stringify(lib, null, 4), 'utf8');
     }
 
     control_topic = '/MUV/control/' + lib["name"] + '/' + lib["control"][0];
@@ -56,7 +54,7 @@ function init() {
 
     lib_mqtt_client.publish(my_status_topic, status);
 
-    setTimeout(() => {
+    const checkCamera = () => {
         let camera_test = spawn("gphoto2", ["--summary"]);
         console.log('Get camera summary to check connection');
 
@@ -67,13 +65,20 @@ function init() {
             console.log('stderr: ' + data);
             if (data.includes('gphoto2: not found')) {
                 console.log('Please install gphoto library');
+                status = 'Error';
+                let msg = status + ' - Please install gphoto library';
+                lib_mqtt_client.publish(my_status_topic, msg);
+                process.kill(camera_test.pid, 'SIGINT');
             } else if (data.includes('PTP Timeout')) {
                 status = 'Please reconnect the camera cable.';
                 lib_mqtt_client.publish(my_status_topic, status);
+                process.kill(camera_test.pid, 'SIGINT');
             } else if (data.includes('no camera found')) {
                 status = 'Please check the camera.';
                 lib_mqtt_client.publish(my_status_topic, status);
+                process.kill(camera_test.pid, 'SIGINT');
             }
+            setTimeout(checkCamera, 1000);
         });
         camera_test.on('exit', (code) => {
             console.log('exit: ' + code);
@@ -85,7 +90,8 @@ function init() {
         camera_test.on('error', function (code) {
             console.log('error: ' + code);
         });
-    }, 100);
+    }
+    checkCamera();
 }
 
 function lib_mqtt_connect(broker_ip, port, fc, control) {
@@ -158,102 +164,89 @@ function lib_mqtt_connect(broker_ip, port, fc, control) {
 }
 
 function capture_image() {
-    if (capture_flag) {
-        console.time('capture');
-        // gphoto2 --capture-image-and-download --filename 20%y-%m-%dT%H:%M:%S.jpg --interval 5 --folder ./
-        capture_command = spawn("gphoto2", ['--capture-image-and-download', '--filename', '20%y-%m-%dT%H_%M_%S.jpg', '--interval', interval, '--folder', './']);
+    console.time('capture');
+    // gphoto2 --capture-image-and-download --filename 20%y-%m-%dT%H:%M:%S.jpg --interval 5 --folder ./
+    capture_command = spawn("gphoto2", ['--capture-image-and-download', '--filename', '20%y-%m-%dT%H_%M_%S.jpg', '--interval', interval, '--folder', './']);
 
-        capture_command.stdout.on('data', (data) => {
-            console.log('data: ' + data);
+    capture_command.stdout.on('data', (data) => {
+        // console.log('data: ' + data);
 
-            console.timeEnd('capture');
-            if (data.toString().split('\n')[1].includes('.jpg')) {
-                let data_arr = data.toString().split('\n')[1].split(' ')
-                for (let idx in data_arr) {
-                    if (data_arr[idx].includes('.jpg')) {
-                        gpi_data.image = data_arr[idx];
+        console.timeEnd('capture');
+        if (data.toString().split('\n')[1].includes('.jpg')) {
+            let data_arr = data.toString().split('\n')[1].split(' ')
+            for (let idx in data_arr) {
+                if (data_arr[idx].includes('.jpg')) {
+                    gpi_data.image = data_arr[idx];
 
-                        gps_filename.insert(gpi_data);
-                        lib_mqtt_client.publish(captured_position_topic, JSON.stringify(gpi_data)); // backup gps and image name
-                    }
+                    gps_filename.insert(gpi_data);
+                    break;
                 }
-                status = 'Capture';
-                count++;
-                let msg = status + ' ' + count;
-                lib_mqtt_client.publish(my_status_topic, msg);
             }
-            console.time('capture');
-        });
+            status = 'Capture';
+            count++;
+            let msg = status + ' ' + count;
+            lib_mqtt_client.publish(my_status_topic, msg);
+        }
+        console.time('capture');
+    });
 
-        capture_command.stderr.on('data', (data) => {
-            if (data.toString().includes('gphoto2: not found')) {
-                console.log('Please install gphoto library');
-            } else if (data.toString().includes("Operation cancelled.")) {
-                status = 'Ready';
-                lib_mqtt_client.publish(my_status_topic, status);
-                console.log('Operation cancelled.');
-            } else if (data.toString().includes('PTP General')) {
-                status = 'Ready';
-                lib_mqtt_client.publish(my_status_topic, status);
-                console.log('Cancelled.');
-            } else if (data.toString().includes('You need to specify a folder starting with')) {
-                status = 'Error';
-                let msg = status + ' - Board Memory Full';
-                lib_mqtt_client.publish(my_status_topic, msg);
-                console.log(msg);
-            } else if (data.toString().includes('Could not capture image')) {
-                status = 'Error';
-                let msg = status + ' - Could not capture';
-                lib_mqtt_client.publish(my_status_topic, msg);
-                console.log(msg);
-                process.kill(capture_command.pid, 'SIGINT');
-                setTimeout(capture_image, 100);
-                // TODO: 재실행 되는지 확인
-            } else {
-                console.log('stderr: ' + data);
-            }
-        });
+    capture_command.stderr.on('data', (data) => {
+        if (data.toString().includes('gphoto2: not found')) {
+            console.log('Please install gphoto library');
+            status = 'Error';
+            let msg = status + ' - Please install gphoto library';
+            lib_mqtt_client.publish(my_status_topic, msg);
+            process.kill(capture_command.pid, 'SIGINT');
+        } else if (data.toString().includes("Operation cancelled.")) {
+            status = 'Ready';
+            lib_mqtt_client.publish(my_status_topic, status);
+            console.log('Operation cancelled.');
+        } else if (data.toString().includes('PTP General')) {
+            status = 'Ready';
+            lib_mqtt_client.publish(my_status_topic, status);
+            console.log('Cancelled.');
+        } else if (data.toString().includes('You need to specify a folder starting with')) {
+            status = 'Error';
+            let msg = status + ' - Board Memory Full';
+            lib_mqtt_client.publish(my_status_topic, msg);
+            process.kill(capture_command.pid, 'SIGINT');
+        } else if (data.toString().includes('Could not capture image')) {
+            status = 'Error';
+            let msg = status + ' - Could not capture';
+            lib_mqtt_client.publish(my_status_topic, msg);
+            process.kill(capture_command.pid, 'SIGINT');
+            setTimeout(capture_image, 100);
+            // TODO: 재실행 되는지 확인
+        } else {
+            console.log('stderr: ' + data);
+        }
+    });
 
-        capture_command.on('exit', (code) => {
-            console.log(count, 'exit: ' + code);
+    capture_command.on('exit', (code) => {
+        console.log(count, 'exit: ' + code);
 
-            console.timeEnd('capture');
-            if (code === null) {
-                status = 'Ready';
-                lib_mqtt_client.publish(my_status_topic, status);
-            }
-        });
+        console.timeEnd('capture');
+        if (code === null) {
+            status = 'Ready';
+            lib_mqtt_client.publish(my_status_topic, status);
+        }
+    });
 
-        capture_command.on('error', (code) => {
-            console.log('error: ' + code);
-        });
-        // console.time('capture');
-        // gps_filename.insert(gpi_data);
-        // lib_mqtt_client.publish(captured_position_topic, JSON.stringify(gpi_data));
-        // console.timeEnd('capture');
-        // status = 'Capture';
-        // count++;
-        // let msg = status + ' ' + count;
-        // lib_mqtt_client.publish(my_status_topic, msg);
-        // setInterval(() => {
-        //     console.time('capture');
-        //     gps_filename.insert(gpi_data);
-        //     lib_mqtt_client.publish(captured_position_topic, JSON.stringify(gpi_data));
-        //     console.timeEnd('capture');
-        //     status = 'Capture';
-        //     count++;
-        //     let msg = status + ' ' + count;
-        //     lib_mqtt_client.publish(my_status_topic, msg);
-        // }, interval * 1000);
-    }
+    capture_command.on('error', (code) => {
+        console.log('error: ' + code);
+    });
 }
+
+// TODO: gphoto2 라이브러리 설치 - spawn
 
 setInterval(() => {
     if (status === 'Ready') {
         if (capture_flag) {
             // clearInterval(tid);
             capture_image();
+
+            capture_flag = false;
         }
     }
-}, interval * 1000);
+}, 1000);
 
