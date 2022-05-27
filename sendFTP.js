@@ -179,10 +179,12 @@ function lib_mqtt_connect(broker_ip, port, control) {
                         ftp_client.ensureDir("/" + ftp_dir);
                         if (external_memory !== '/media/pi/') {
                             memory_dir = external_memory + '/' + ftp_dir;
+                            !fs.existsSync(memory_dir) && fs.mkdirSync(memory_dir);
+                            console.log('[ftp_lib_mqtt] Create ( ' + memory_dir + ' ) directory')
+                        } else {
+                            !fs.existsSync(ftp_dir) && fs.mkdirSync(ftp_dir);
+                            console.log('[ftp_lib_mqtt] Create ( ' + ftp_dir + ' ) directory')
                         }
-                        !fs.existsSync(memory_dir) && fs.mkdirSync(memory_dir);
-
-                        console.log('[ftp_lib_mqtt] Create ( ' + memory_dir + ' ) directory')
 
                         count = 0;
 
