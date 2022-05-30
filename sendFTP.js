@@ -176,7 +176,13 @@ function lib_mqtt_connect(broker_ip, port, control) {
                         mission = command_arr[2];
 
                         ftp_dir = 'FTP-' + moment().format('YYYY-MM-DD') + '-' + mission + '_' + drone_name;
-                        ftp_client.ensureDir("/" + ftp_dir);
+                        if (!ftp_client.closed) {
+                            ftp_client.ensureDir("/" + ftp_dir);
+                        } else {
+                            ftp_client.close();
+                            setTimeout(ftp_connect, 100, ftp_host, ftp_user, ftp_pw);
+                        }
+
                         if (external_memory !== '/media/pi/') {
                             memory_dir = external_memory + '/' + ftp_dir;
                             !fs.existsSync(memory_dir) && fs.mkdirSync(memory_dir);
@@ -251,18 +257,23 @@ function send_image_via_ftp() {
             } else {
                 if (files.length > 0) {
                     console.time('ftp');
-                    ftp_client.uploadFrom('./' + geotagging_dir + '/' + files[0], "/" + ftp_dir + '/' + files[0]).then(() => {
-                        console.timeEnd('ftp');
-                        setTimeout(move_image, 1, './' + geotagging_dir + '/', external_memory + '/' + ftp_dir + '/', files[0]);
+                    if (!ftp_client.closed) {
+                        ftp_client.uploadFrom('./' + geotagging_dir + '/' + files[0], "/" + ftp_dir + '/' + files[0]).then(() => {
+                            console.timeEnd('ftp');
+                            setTimeout(move_image, 1, './' + geotagging_dir + '/', external_memory + '/' + ftp_dir + '/', files[0]);
 
-                        count++;
+                            count++;
 
-                        empty_count = 0;
-                        let msg = status + ' ' + count;
-                        lib_mqtt_client.publish(my_status_topic, msg);
+                            empty_count = 0;
+                            let msg = status + ' ' + count;
+                            lib_mqtt_client.publish(my_status_topic, msg);
 
-                        setTimeout(send_image_via_ftp, 5);
-                    });
+                            setTimeout(send_image_via_ftp, 5);
+                        });
+                    } else {
+                        ftp_client.close();
+                        setTimeout(ftp_connect, 100, ftp_host, ftp_user, ftp_pw);
+                    }
                 } else {
                     if (status === 'Started') {
                         empty_count++;
