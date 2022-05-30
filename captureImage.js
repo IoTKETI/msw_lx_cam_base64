@@ -52,8 +52,6 @@ function init() {
 
     lib_mqtt_connect('localhost', 1883, gpi_topic, control_topic);
 
-    lib_mqtt_client.publish(my_status_topic, status);
-
     const checkCamera = () => {
         let camera_test = spawn("gphoto2", ["--summary"]);
         console.log('Get camera summary to check connection');
@@ -68,23 +66,28 @@ function init() {
                 status = 'Error';
                 let msg = status + ' - Please install gphoto library';
                 lib_mqtt_client.publish(my_status_topic, msg);
+                // TODO: gphoto2 library 설치 실행
                 process.kill(camera_test.pid, 'SIGINT');
             } else if (data.includes('PTP Timeout')) {
-                status = 'Please reconnect the camera cable.';
-                lib_mqtt_client.publish(my_status_topic, status);
+                status = 'Error';
+                let msg = status + ' - Reconnect the camera cable.';
+                lib_mqtt_client.publish(my_status_topic, msg);
                 process.kill(camera_test.pid, 'SIGINT');
-            } else if (data.includes('no camera found')) {
-                status = 'Please check the camera.';
-                lib_mqtt_client.publish(my_status_topic, status);
+            } else if (data.includes('*** Error: No camera found. ***')) {
+                status = 'Error';
+                let msg = status + ' - Check the camera power.';
+                lib_mqtt_client.publish(my_status_topic, msg);
                 process.kill(camera_test.pid, 'SIGINT');
             }
-            setTimeout(checkCamera, 1000);
+
         });
         camera_test.on('exit', (code) => {
             console.log('exit: ' + code);
             if (code === 0) {
                 status = 'Ready';
                 lib_mqtt_client.publish(my_status_topic, status);
+            } else if (code === 1 || code === null){
+                setTimeout(checkCamera, 1000);
             }
         });
         camera_test.on('error', function (code) {
@@ -125,6 +128,8 @@ function lib_mqtt_connect(broker_ip, port, fc, control) {
                     console.log('[capture_lib_mqtt] lib_sub_control_topic: ' + control);
                 });
             }
+
+            lib_mqtt_client.publish(my_status_topic, status);
         });
 
         lib_mqtt_client.on('message', function (topic, message) {
@@ -147,12 +152,14 @@ function lib_mqtt_connect(broker_ip, port, fc, control) {
                         lib_mqtt_client.publish(my_status_topic, status);
                     }
                 } else if (message.toString() === 's') {
+                    status = 'Stop';
+                    lib_mqtt_client.publish(my_status_topic, status);
+
+                    capture_flag = false;
+
                     if (capture_command !== null) {
                         process.kill(capture_command.pid, 'SIGINT');
                     }
-                    capture_flag = false;
-                    status = 'Stop';
-                    lib_mqtt_client.publish(my_status_topic, status);
                 }
             }
         });
@@ -179,9 +186,9 @@ function capture_image() {
                     gpi_data.image = data_arr[idx];
 
                     gps_filename.insert(gpi_data);
-                    if (gpi_data.hasOwnProperty('_id')){
-                            delete gpi_data._id;
-                        }
+                    if (gpi_data.hasOwnProperty('_id')) {
+                        delete gpi_data._id;
+                    }
                     lib_mqtt_client.publish(captured_position_topic, JSON.stringify(gpi_data));
                     break;
                 }
@@ -195,17 +202,15 @@ function capture_image() {
     });
 
     capture_command.stderr.on('data', (data) => {
-        if (data.toString().includes('gphoto2: not found')) {
-            console.log('Please install gphoto library');
-            status = 'Error';
-            let msg = status + ' - Please install gphoto library';
-            lib_mqtt_client.publish(my_status_topic, msg);
-            process.kill(capture_command.pid, 'SIGINT');
-        } else if (data.toString().includes("Operation cancelled.")) {
+        if (data.toString().includes("Operation cancelled.")) {
             status = 'Ready';
             lib_mqtt_client.publish(my_status_topic, status);
             console.log('Operation cancelled.');
         } else if (data.toString().includes('PTP General')) {
+            status = 'Ready';
+            lib_mqtt_client.publish(my_status_topic, status);
+            console.log('Cancelled.');
+        } else if (data.includes('PTP Cancel Request')){
             status = 'Ready';
             lib_mqtt_client.publish(my_status_topic, status);
             console.log('Cancelled.');
@@ -214,14 +219,22 @@ function capture_image() {
             let msg = status + ' - Board Memory Full';
             lib_mqtt_client.publish(my_status_topic, msg);
             process.kill(capture_command.pid, 'SIGINT');
+        // } else if (data.toString().includes('ERROR: Could not capture image.')) {
+        //     console.log('Could not capture image.');
+        //     status = 'Error';
+        //     let msg = status + ' - Could not capture';
+        //     lib_mqtt_client.publish(my_status_topic, msg);
+        //     process.kill(capture_command.pid, 'SIGINT');
         } else {
             console.log('stderr: ' + data);
             status = 'Error';
-            let msg = status + ' - ' + data;
+            let msg = status + ' - stderr: ' + data;
             lib_mqtt_client.publish(my_status_topic, msg);
             process.kill(capture_command.pid, 'SIGINT');
             setTimeout(capture_image, 100);
         }
+        // PTP I/O Error
+        // PTP Timeout
     });
 
     capture_command.on('exit', (code) => {
