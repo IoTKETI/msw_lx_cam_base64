@@ -1,3 +1,7 @@
+/**
+ * Created by Wonseok Jung in KETI on 2022-02-08.
+ */
+
 const {nanoid} = require("nanoid");
 const mqtt = require("mqtt");
 const fs = require('fs');
@@ -252,7 +256,7 @@ function capture_image() {
     });
 }
 
-// TODO: gphoto2 라이브러리 설치 - spawn
+// TODO: gphoto2 library 설치 - spawn
 
 setInterval(() => {
     if (status === 'Ready') {
@@ -264,4 +268,3 @@ setInterval(() => {
         }
     }
 }, 1000);
-

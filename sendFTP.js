@@ -1,3 +1,7 @@
+/**
+ * Created by Wonseok Jung in KETI on 2022-02-08.
+ */
+
 const fs = require('fs');
 const moment = require("moment");
 const sendFTP = require("basic-ftp");
