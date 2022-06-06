@@ -7,6 +7,7 @@ const fs = require('fs');
 const spawn = require('child_process').spawn;
 const {nanoid} = require('nanoid');
 const util = require("util");
+const request = require('request');
 
 global.sh_man = require('./http_man');
 
@@ -60,7 +61,11 @@ function init() {
     if (config.lib.length > 0) {
         for (let idx in config.lib) {
             if (config.lib.hasOwnProperty(idx)) {
-                if (msw_mqtt_client != null) {
+                if (msw_mqtt_client !== null) {
+                    let uri = 'Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + my_msw_name;
+                    let cnt = 'Captured_GPS';
+                    DeleteSubscription(uri, cnt);
+
                     for (let i = 0; i < config.lib[idx].control.length; i++) {
                         let sub_container_name = config.lib[idx].control[i];
                         let _topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + my_msw_name + '/' + sub_container_name;
@@ -114,6 +119,87 @@ function runLib(obj_lib) {
     } catch (e) {
         console.log(e.message);
     }
+}
+
+let sub_rn = 'lx_monitor';
+
+function DeleteSubscription(uri, cnt) {
+    const method = "DELETE";
+    const requestId = Math.floor(Math.random() * 10000);
+    const url = 'http://' + drone_info.host + ":7579/" + uri + "/" + cnt + "/" + sub_rn;
+
+    const options = {
+        url: url,
+        method: method,
+        headers: {
+            "Accept": "application/json",
+            "X-M2M-Origin": 'S' + drone_info.id,
+            "X-M2M-RI": requestId,
+        }
+    };
+    console.log("\n[REQUEST]\n", options);
+
+    request(options, function (error, response, body) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log("\n[RESPONSE]\n", response.statusCode);
+            console.log(body);
+            CreateSubscription(uri, cnt);
+        }
+    });
+}
+
+function CreateSubscription(uri, cnt) {
+    const method = "POST";
+    const url = 'http://' + drone_info.host + ":7579/" + uri + "/" + cnt;
+    const resourceType = 23;
+    const requestId = Math.floor(Math.random() * 10000);
+    const representation = {
+        "m2m:sub": {
+            "rn": sub_rn,
+            "nu": ['http://' + drone_info.host + ':7597/SLX?ct=json'],
+            "nct": 2,
+            "enc": {
+                "net": [1, 2, 3, 4]
+            },
+            "exc": 0
+        }
+    };
+
+    const options = {
+        url: url,
+        method: method,
+        headers: {
+            "Accept": "application/json",
+            "X-M2M-Origin": 'S' + drone_info.id,
+            "X-M2M-RI": requestId,
+            "Content-Type": "application/json;ty=" + resourceType
+        },
+        json: representation
+    };
+
+    console.log("\n[REQUEST]\n", options);
+    request(options, function (error, response, body) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log("\n[RESPONSE]\n", response.statusCode);
+            console.log(body);
+
+            if (response.statusCode === 409) {
+                DeleteSubscription(uri, cnt);
+            }
+
+            if (cnt === 'Captured_GPS') {
+                cnt = 'Geotagged_GPS';
+                DeleteSubscription(uri, cnt);
+            } else if (cnt === 'Geotagged_GPS') {
+                cnt = 'FTP_Status';
+                DeleteSubscription(uri, cnt);
+            }
+        }
+    });
 }
 
 let msw_mqtt_client = null;

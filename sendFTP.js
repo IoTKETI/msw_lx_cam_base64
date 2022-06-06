@@ -199,7 +199,8 @@ function lib_mqtt_connect(broker_ip, port, control) {
                         count = 0;
 
                         status = 'Start';
-                        lib_mqtt_client.publish(my_status_topic, status);
+                        let msg = status + ' ' + ftp_dir;
+                        lib_mqtt_client.publish(my_status_topic, msg);
                     }
                 }
             } else {
