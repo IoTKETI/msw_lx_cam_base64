@@ -11,18 +11,16 @@ const request = require('request');
 
 global.sh_man = require('./http_man');
 
-let my_msw_name = 'msw_lx_cam';
-
 let fc = {};
 let config = {};
 
-config.name = my_msw_name;
+config.name = 'msw_lx_cam';
 global.drone_info = '';
 
 try {
     drone_info = JSON.parse(fs.readFileSync('../drone_info.json', 'utf8'));
 
-    config.directory_name = my_msw_name + '_' + my_msw_name;
+    config.directory_name = config.name + '_' + config.name;
     config.gcs = drone_info.gcs;
     config.drone = drone_info.drone;
     config.lib = [];
@@ -62,13 +60,13 @@ function init() {
         for (let idx in config.lib) {
             if (config.lib.hasOwnProperty(idx)) {
                 if (msw_mqtt_client !== null) {
-                    let uri = 'Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + my_msw_name;
+                    let uri = 'Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name;
                     let cnt = 'Captured_GPS';
                     DeleteSubscription(uri, cnt);
 
                     for (let i = 0; i < config.lib[idx].control.length; i++) {
                         let sub_container_name = config.lib[idx].control[i];
-                        let _topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + my_msw_name + '/' + sub_container_name;
+                        let _topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + sub_container_name;
                         msw_mqtt_client.subscribe(_topic);
                         local_msw_mqtt_client.subscribe(_topic);
                         msw_sub_mobius_topic.push(_topic);
@@ -215,7 +213,7 @@ function msw_mqtt_connect(broker_ip, port) {
             keepalive: 10,
             protocolId: "MQTT",
             protocolVersion: 4,
-            clientId: 'mqttjs_' + config.drone + '_' + my_msw_name + '_' + nanoid(15),
+            clientId: 'mqttjs_' + config.drone + '_' + config.name + '_' + nanoid(15),
             clean: true,
             reconnectPeriod: 2000,
             connectTimeout: 2000,
@@ -242,7 +240,7 @@ function msw_mqtt_connect(broker_ip, port) {
                     let patharr = jsonObj.pc['m2m:sgn'].sur.split('/');
                     let lib_ctl_topic = '/MUV/control/' + patharr[patharr.length - 3].replace('msw_', 'lib_') + '/' + patharr[patharr.length - 2];
 
-                    if (patharr[patharr.length - 3] === my_msw_name) {
+                    if (patharr[patharr.length - 3] === config.name) {
                         if (jsonObj.pc['m2m:sgn'].nev) {
                             if (jsonObj.pc['m2m:sgn'].nev.rep) {
                                 if (jsonObj.pc['m2m:sgn'].nev.rep['m2m:cin']) {
@@ -280,7 +278,7 @@ function local_msw_mqtt_connect(broker_ip, port) {
             keepalive: 10,
             protocolId: "MQTT",
             protocolVersion: 4,
-            clientId: 'local_msw_mqtt_client_mqttjs_' + config.drone + '_' + my_msw_name + '_' + nanoid(15),
+            clientId: 'local_msw_mqtt_client_mqttjs_' + config.drone + '_' + config.name + '_' + nanoid(15),
             clean: true,
             reconnectPeriod: 2000,
             connectTimeout: 2000,
