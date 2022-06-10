@@ -12,6 +12,7 @@
   "dependencies": {
     "basic-ftp": "^4.6.6",
     "exif": "^0.6.0",
+    "fs-extra": "^10.1.0",
     "moment": "^2.29.2",
     "mqtt": "^4.3.7",
     "nanoid": "^3.3.2",

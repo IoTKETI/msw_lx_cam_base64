@@ -3,17 +3,18 @@
  */
 
 const fs = require('fs');
+const fsextra = require('fs-extra');
 const moment = require("moment");
 const sendFTP = require("basic-ftp");
 const {nanoid} = require("nanoid");
 const mqtt = require("mqtt");
 const {spawn} = require('child_process');
+
 const my_lib_name = 'lib_lx_cam';
 
 let mission = '';
 let ftp_dir = '';
 let drone_name = process.argv[3];
-let memory_dir = '';
 
 let ftp_client = null;
 let ftp_host = process.argv[2];
@@ -35,90 +36,6 @@ let external_memory = '/media/pi/';
 init();
 
 function init() {
-    // 외장 메모리 존재 여부 확인
-    // fs.readdirSync(external_memory, {withFileTypes: true}).forEach(p => {
-    //     let dir = p.name;
-    //     if (p.isDirectory()) {
-    //         external_memory += dir;
-    //         console.log('외장 메모리 경로 : ' + external_memory);
-    //
-    //         let check_memory = spawn('df', ['-h']);
-    //
-    //         check_memory.stdout.on('data', (data) => {
-    //             // console.log('stdout: ' + data);
-    //             data.toString().split('\n').forEach((list) => {
-    //                 if (list.includes('/dev/root')) {
-    //                     list.split(' ').forEach((d) => {
-    //                         if (d.includes('%')) {
-    //                             console.log('Free memory in ' + external_memory + ' - ' + d);
-    //                             if ((100 - parseInt(d.substring(0, d.length - 1))) <= 10) {
-    //                                 if (directorysInExMem.length > 0) {
-    //                                     console.log(external_memory + '/' + directorysInExMem[0]);
-    //                                     fs.rmdir(external_memory + '/' + directorysInExMem[0], {recursive: true}, (err) => {
-    //                                         if (err) {
-    //                                             console.log(err);
-    //                                         } else {
-    //                                             console.log(external_memory + '/' + directorysInExMem[0] + " Deleted!");
-    //                                         }
-    //                                     });
-    //                                 }
-    //                             }
-    //                         }
-    //                     });
-    //                 }
-    //             })
-    //         });
-    //         check_memory.stderr.on('data', (data) => {
-    //             console.log('stderr: ' + data);
-    //         });
-    //         check_memory.on('exit', (code) => {
-    //             console.log('exit: ' + code);
-    //         });
-    //         check_memory.on('error', function (code) {
-    //             console.log('error: ' + code);
-    //         });
-    //
-    //         // 외장메모리 내 사진 폴더 조회
-    //         let directorysInExMem = [];
-    //         fs.readdirSync(external_memory, {withFileTypes: true}).forEach(p => {
-    //             let dir = p.name;
-    //             if (p.name.includes('FTP-')) {
-    //                 if (p.isDirectory()) {
-    //                     directorysInExMem.push(dir);
-    //                 }
-    //             }
-    //         });
-    //         // 조회한 사진 폴더 중 최근 폴더를 FTP 폴더로 설정
-    //         if (directorysInExMem.length > 0) {
-    //             ftp_dir = directorysInExMem[directorysInExMem.length - 1];
-    //             console.log('외장메모리의 마지막 사진 폴더 : ' + ftp_dir);
-    //             // ftp_dir = external_memory + '/' + ftp_dir;
-    //             console.log('외장메모리의 마지막 사진 폴더 경로 : ' + external_memory + '/' + ftp_dir);
-    //         }
-    //         // 외장메모리가 있지만 사진 폴더가 없을 경우 미션 수신 대기
-    //         else {
-    //             // ftp_dir = external_memory;
-    //             // console.log(ftp_dir);
-    //             console.log('외장메모리의 마지막 사진 폴더 경로 : ' + external_memory);
-    //         }
-    //     }
-    // });
-
-    // // 외장메모리 없으면
-    // if (external_memory === '/media/pi/') {
-    //     let directorys = [];
-    //     fs.readdirSync('./', {withFileTypes: true}).forEach(p => {
-    //         let dir = p.name;
-    //         if (p.name.includes('FTP-')) {
-    //             if (p.isDirectory()) {
-    //                 directorys.push(dir);
-    //             }
-    //         }
-    //     });
-    //     ftp_dir = './' + directorys[directorys.length - 1];
-    //     console.log('보드에서 마지막 사진 폴더 이름 : ' + ftp_dir);
-    // }
-
     let check_memory = spawn('df', ['-h']);
 
     check_memory.stdout.on('data', (data) => {
@@ -129,13 +46,13 @@ function init() {
                     if (d.includes('%')) {
                         console.log('Free memory is ' + d);
                         if ((100 - parseInt(d.substring(0, d.length - 1))) <= 80) {
-                            if (directorysInExMem.length > 0) {
-                                console.log('./' + directorysInExMem[0]);
-                                fs.rmdir('./' + directorysInExMem[0], {recursive: true}, (err) => {
+                            if (directorys.length > 0) {
+                                console.log('./' + directorys[0]);
+                                fs.rmdir('./' + directorys[0], {recursive: true}, (err) => {
                                     if (err) {
                                         console.log(err);
                                     } else {
-                                        console.log('./' + directorysInExMem[0] + " Deleted!");
+                                        console.log('./' + directorys[0] + " Deleted!");
                                     }
                                 });
                             }
@@ -156,16 +73,6 @@ function init() {
         console.log('error: ' + code);
     });
 
-    let directorysInExMem = [];
-    fs.readdirSync('./', {withFileTypes: true}).forEach(p => {
-        let dir = p.name;
-        if (p.name.includes('FTP-')) {
-            if (p.isDirectory()) {
-                directorysInExMem.push(dir);
-            }
-        }
-    });
-
     let directorys = [];
     fs.readdirSync('./', {withFileTypes: true}).forEach(p => {
         let dir = p.name;
@@ -175,7 +82,7 @@ function init() {
             }
         }
     });
-    let ftp_dir = './' + directorys[directorys.length - 1];
+    ftp_dir = directorys[directorys.length - 1];
     console.log('보드에서 마지막 사진 폴더 이름 : ' + ftp_dir);
 
     setTimeout(ftp_connect, 500, ftp_host, ftp_user, ftp_pw, ftp_dir);
@@ -255,6 +162,18 @@ function lib_mqtt_connect(broker_ip, port, control) {
                         let msg = status + ' ' + ftp_dir;
                         lib_mqtt_client.publish(my_status_topic, msg);
                     }
+                } else if (message.toString() === 'copy') {
+                    checkUSB.then((result) => {
+                        if (result === 'finish') {
+                            status = 'Copy';
+                            lib_mqtt_client.publish(my_status_topic, status);
+                            copy2USB(ftp_dir, external_memory + '/' + ftp_dir);
+                        } else {
+                            status = 'Finish';
+                            let msg = status + ' Not found external memory';
+                            lib_mqtt_client.publish(my_status_topic, msg);
+                        }
+                    });
                 }
             } else {
                 console.log('From ' + topic + 'message is ' + message.toString());
@@ -272,10 +191,7 @@ async function ftp_connect(host, user, pw, dir) {
     ftp_client.ftp.verbose = false;
     try {
         await ftp_client.access({
-            host: host,
-            user: user,
-            password: pw,
-            port: 50023
+            host: host, user: user, password: pw, port: 50023
         })
 
         if (dir !== undefined) {
@@ -321,7 +237,7 @@ function send_image_via_ftp() {
                     if (!ftp_client.closed) {
                         ftp_client.uploadFrom('./' + geotagging_dir + '/' + files[0], "/" + ftp_dir + '/' + files[0]).then(() => {
                             console.timeEnd('ftp');
-                            setTimeout(move_image, 1, './' + geotagging_dir + '/', external_memory + '/' + ftp_dir + '/', files[0]);
+                            setTimeout(move_image, 1, './' + geotagging_dir + '/', './' + ftp_dir + '/', files[0]);
 
                             count++;
 
@@ -387,4 +303,29 @@ function move_image(from, to, image) {
     }
 }
 
-// TODO: 필요시 외장메모리 연결하여 명령으로 복사할 수 있도록
+const checkUSB = new Promise((resolve, reject) => {
+    // 외장 메모리 존재 여부 확인
+    fs.readdirSync(external_memory, {withFileTypes: true}).forEach(p => {
+        let dir = p.name;
+        if (p.isDirectory()) {
+            external_memory += dir;
+            console.log('외장 메모리 경로 : ' + external_memory);
+        }
+    });
+    resolve('finish');
+});
+
+function copy2USB(source, destination) {
+    !fs.existsSync(destination) && fs.mkdirSync(destination);
+
+    status = 'Copying';
+    lib_mqtt_client.publish(my_status_topic, status);
+
+    fsextra.copy(source, destination, function (err) {
+        if (err) {
+            console.log(err);
+        }
+        status = 'Finish';
+        lib_mqtt_client.publish(my_status_topic, status);
+    });
+}
