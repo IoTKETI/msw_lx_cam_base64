@@ -243,7 +243,7 @@ function send_image_via_ftp() {
                                     count++;
 
                                     empty_count = 0;
-                                    let msg = status + ' ' + count + ' ' + files[0];
+                                    let msg = status + ' ' + count;
                                     lib_mqtt_client.publish(my_status_topic, msg);
                                     console.timeEnd('ftpmove');
 
