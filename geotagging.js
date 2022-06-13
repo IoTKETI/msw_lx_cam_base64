@@ -133,7 +133,6 @@ function geotag_image() {
                 let gps;
                 try {
                     gps = gps_filename.findOne({image: files[0]})._settledValue;
-                    console.log(files[0]);
                 } catch (e) {
                     let edit_file = moment(moment(files[0].substr(0, files[0].length - 4)).add("-1", "s")).format("YYYY-MM-DDTHH:mm:ss") + '.jpg';
                     gps = gps_filename.findOne({image: edit_file})._settledValue;
