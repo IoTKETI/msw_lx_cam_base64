@@ -234,18 +234,41 @@ function send_image_via_ftp() {
             } else {
                 if (files.length > 0) {
                     console.time('ftp');
+                    console.time('ftpmove');
                     if (!ftp_client.closed) {
                         ftp_client.uploadFrom('./' + geotagging_dir + '/' + files[0], "/" + ftp_dir + '/' + files[0]).then(() => {
                             console.timeEnd('ftp');
-                            setTimeout(move_image, 1, './' + geotagging_dir + '/', './' + ftp_dir + '/', files[0]);
+                            move_image('./' + geotagging_dir + '/', './' + ftp_dir + '/', files[0]).then((result) => {
+                                if (result === 'finish') {
+                                    count++;
 
-                            count++;
+                                    empty_count = 0;
+                                    let msg = status + ' ' + count + ' ' + files[0];
+                                    lib_mqtt_client.publish(my_status_topic, msg);
 
-                            empty_count = 0;
-                            let msg = status + ' ' + count + ' ' + files[0];
-                            lib_mqtt_client.publish(my_status_topic, msg);
+                                    setTimeout(send_image_via_ftp, 5);
+                                } else {
 
-                            setTimeout(send_image_via_ftp, 5);
+                                }
+                            }).catch((err) => {
+                                console.log(err);
+                                fs.stat('./' + ftp_dir + '/' + files[0], (err) => {
+                                    console.log(err);
+                                    if (err !== null && err.code === "ENOENT") {
+                                        console.log("[sendFTP]사진이 존재하지 않습니다.");
+                                    }
+                                    console.log("[sendFTP]이미 처리 후 옮겨진 사진 (" + files[0] + ") 입니다.");
+                                });
+                            });
+
+                            // count++;
+                            //
+                            // empty_count = 0;
+                            // let msg = status + ' ' + count;
+                            // lib_mqtt_client.publish(my_status_topic, msg);
+                            //
+                            // setTimeout(send_image_via_ftp, 5);
+                            console.timeEnd('ftpmove');
                         });
                     } else {
                         ftp_client.close();
@@ -284,24 +307,35 @@ setInterval(() => {
     }
 }, 1000);
 
-function move_image(from, to, image) {
-    try {
-        // fs.renameSync(from + image, to + image);
-        fs.copyFile(from + image, to + image, (err) => {
-            fs.unlink(from + image, (err) => {
+const move_image = ((from, to, image) => {
+    return new Promise((resolve, reject) => {
+        // try {
+        //     // fs.renameSync(from + image, to + image);
+        //     fs.copyFile(from + image, to + image, (err) => {
+        //         fs.unlink(from + image, (err) => {
+        //         });
+        //     });
+        // } catch (e) {
+        //     console.log(e);
+        //     fs.stat(to + image, (err) => {
+        //         console.log(err);
+        //         if (err !== null && err.code === "ENOENT") {
+        //             console.log("[sendFTP]사진이 존재하지 않습니다.");
+        //         }
+        //         console.log("[sendFTP]이미 처리 후 옮겨진 사진 (" + image + ") 입니다.");
+        //     });
+        // }
+        try {
+            fs.copyFile(from + image, to + image, (err) => {
+                fs.unlink(from + image, (err) => {
+                });
             });
-        });
-    } catch (e) {
-        console.log(e);
-        fs.stat(to + image, (err) => {
-            console.log(err);
-            if (err !== null && err.code === "ENOENT") {
-                console.log("[sendFTP]사진이 존재하지 않습니다.");
-            }
-            console.log("[sendFTP]이미 처리 후 옮겨진 사진 (" + image + ") 입니다.");
-        });
-    }
-}
+            resolve('finish');
+        } catch (e) {
+            reject('no such file');
+        }
+    });
+});
 
 const checkUSB = new Promise((resolve, reject) => {
     // 외장 메모리 존재 여부 확인
