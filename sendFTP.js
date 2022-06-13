@@ -245,6 +245,7 @@ function send_image_via_ftp() {
                                     empty_count = 0;
                                     let msg = status + ' ' + count + ' ' + files[0];
                                     lib_mqtt_client.publish(my_status_topic, msg);
+                                    console.timeEnd('ftpmove');
 
                                     setTimeout(send_image_via_ftp, 5);
                                 } else {
@@ -268,7 +269,6 @@ function send_image_via_ftp() {
                             // lib_mqtt_client.publish(my_status_topic, msg);
                             //
                             // setTimeout(send_image_via_ftp, 5);
-                            console.timeEnd('ftpmove');
                         });
                     } else {
                         ftp_client.close();
