@@ -260,6 +260,8 @@ function send_image_via_ftp() {
                                     }
                                     console.log("[sendFTP]이미 처리 후 옮겨진 사진 (" + files[0] + ") 입니다.");
                                 });
+                                setTimeout(send_image_via_ftp, 5);
+
                             });
 
                             // count++;
