@@ -45,7 +45,7 @@ function init() {
                 list.split(' ').forEach((d) => {
                     if (d.includes('%')) {
                         console.log('Free memory is ' + d);
-                        if ((100 - parseInt(d.substring(0, d.length - 1))) <= 80) {
+                        if ((100 - parseInt(d.substring(0, d.length - 1))) <= 20) {
                             if (directorys.length > 0) {
                                 console.log('./' + directorys[0]);
                                 fs.rmdir('./' + directorys[0], {recursive: true}, (err) => {
@@ -248,7 +248,7 @@ function send_image_via_ftp() {
                                     lib_mqtt_client.publish(my_status_topic, msg);
                                     console.timeEnd('ftpmove');
 
-                                    setTimeout(send_image_via_ftp, 100);
+                                    setTimeout(send_image_via_ftp, 200);
                                 } else {
 
                                 }
@@ -261,7 +261,7 @@ function send_image_via_ftp() {
                                     }
                                     console.log("[sendFTP]이미 처리 후 옮겨진 사진 (" + files[0] + ") 입니다.");
                                 });
-                                setTimeout(send_image_via_ftp, 100);
+                                setTimeout(send_image_via_ftp, 200);
                             });
 
                             // count++;
@@ -352,7 +352,13 @@ const checkUSB = new Promise((resolve, reject) => {
 });
 
 function copy2USB(source, destination) {
-    !fs.existsSync(destination) && fs.mkdirSync(destination);
+    try {
+        !fs.existsSync(destination) && fs.mkdirSync(destination);
+    } catch (e) {
+        if (e.includes('permission denied')){
+            console.log(e);
+        }
+    }
 
     status = 'Copying';
     lib_mqtt_client.publish(my_status_topic, status);
