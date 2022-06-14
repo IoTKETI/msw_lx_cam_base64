@@ -214,7 +214,7 @@ function capture_image() {
             status = 'Ready';
             lib_mqtt_client.publish(my_status_topic, status);
             console.log('Cancelled.');
-        } else if (data.includes('PTP Cancel Request')){
+        } else if (data.toString().includes('PTP Cancel Request')){
             status = 'Ready';
             lib_mqtt_client.publish(my_status_topic, status);
             console.log('Cancelled.');
@@ -223,19 +223,13 @@ function capture_image() {
             let msg = status + ' - Board Memory Full';
             lib_mqtt_client.publish(my_status_topic, msg);
             process.kill(capture_command.pid, 'SIGINT');
-        // } else if (data.toString().includes('ERROR: Could not capture image.')) {
-        //     console.log('Could not capture image.');
-        //     status = 'Error';
-        //     let msg = status + ' - Could not capture';
-        //     lib_mqtt_client.publish(my_status_topic, msg);
-        //     process.kill(capture_command.pid, 'SIGINT');
         } else {
             console.log('[capture_command] stderr: ' + data);
             status = 'Error';
             let msg = status + ' - stderr: ' + data;
             lib_mqtt_client.publish(my_status_topic, msg);
             process.kill(capture_command.pid, 'SIGINT');
-            setTimeout(capture_image, 100);
+            setTimeout(capture_image, 1000);
         }
         // PTP I/O Error
         // PTP Timeout
