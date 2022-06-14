@@ -5,7 +5,7 @@
 const {nanoid} = require("nanoid");
 const mqtt = require("mqtt");
 const fs = require('fs');
-const {spawn} = require("child_process");
+const {spawn, exec} = require("child_process");
 const db = require('node-localdb');
 
 let gps_filename = db('./gps_filename.json');
@@ -90,7 +90,7 @@ function init() {
             if (code === 0) {
                 status = 'Ready';
                 lib_mqtt_client.publish(my_status_topic, status);
-            } else if (code === 1 || code === null){
+            } else if (code === 1 || code === null) {
                 setTimeout(checkCamera, 1000);
             }
         });
@@ -214,7 +214,7 @@ function capture_image() {
             status = 'Ready';
             lib_mqtt_client.publish(my_status_topic, status);
             console.log('Cancelled.');
-        } else if (data.toString().includes('PTP Cancel Request')){
+        } else if (data.toString().includes('PTP Cancel Request')) {
             status = 'Ready';
             lib_mqtt_client.publish(my_status_topic, status);
             console.log('Cancelled.');
@@ -223,6 +223,16 @@ function capture_image() {
             let msg = status + ' - Board Memory Full';
             lib_mqtt_client.publish(my_status_topic, msg);
             process.kill(capture_command.pid, 'SIGINT');
+        } else if (data.toString().includes('PTP I/O Error') || data.toString().includes('Could not claim the USB')) {
+            exec('gphoto2 --reset', (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`exec error: ${error}`);
+                    return;
+                }
+                console.log(`stdout: ${stdout}`);
+                console.error(`stderr: ${stderr}`);
+            });
+            setTimeout(capture_image, 1000);
         } else {
             console.log('[capture_command] stderr: ' + data);
             status = 'Error';
