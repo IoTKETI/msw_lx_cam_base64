@@ -236,7 +236,6 @@ function send_image_via_ftp() {
                     console.time('ftp');
                     console.time('ftpmove');
                     if (!ftp_client.closed) {
-                        console.log('ftp connection opened');
                         ftp_client.uploadFrom('./' + geotagging_dir + '/' + files[0], "/" + ftp_dir + '/' + files[0]).then(() => {
                             console.timeEnd('ftp');
                             move_image('./' + geotagging_dir + '/', './' + ftp_dir + '/', files[0]).then((result) => {
@@ -250,7 +249,7 @@ function send_image_via_ftp() {
 
                                     setTimeout(send_image_via_ftp, 200);
                                 } else {
-
+                                    setTimeout(send_image_via_ftp, 200);
                                 }
                             }).catch((err) => {
                                 console.log(err);

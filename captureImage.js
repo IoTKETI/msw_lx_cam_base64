@@ -61,10 +61,9 @@ function init() {
         console.log('Get camera summary to check connection');
 
         camera_test.stdout.on('data', (data) => {
-            console.log('stdout: ' + data);
+            console.log('[checkCamera] stdout: ' + data);
         });
         camera_test.stderr.on('data', (data) => {
-            console.log('stderr: ' + data);
             if (data.includes('gphoto2: not found')) {
                 console.log('Please install gphoto library');
                 status = 'Error';
@@ -82,11 +81,12 @@ function init() {
                 let msg = status + ' - Check the camera power.';
                 lib_mqtt_client.publish(my_status_topic, msg);
                 process.kill(camera_test.pid, 'SIGINT');
+            } else {
+                console.log('[checkCamera] stderr: ' + data);
             }
-
         });
         camera_test.on('exit', (code) => {
-            console.log('exit: ' + code);
+            console.log('[checkCamera] exit: ' + code);
             if (code === 0) {
                 status = 'Ready';
                 lib_mqtt_client.publish(my_status_topic, status);
@@ -95,7 +95,7 @@ function init() {
             }
         });
         camera_test.on('error', function (code) {
-            console.log('error: ' + code);
+            console.log('[checkCamera] error: ' + code);
         });
     }
     checkCamera();
@@ -230,7 +230,7 @@ function capture_image() {
         //     lib_mqtt_client.publish(my_status_topic, msg);
         //     process.kill(capture_command.pid, 'SIGINT');
         } else {
-            console.log('stderr: ' + data);
+            console.log('[capture_command] stderr: ' + data);
             status = 'Error';
             let msg = status + ' - stderr: ' + data;
             lib_mqtt_client.publish(my_status_topic, msg);
@@ -242,7 +242,7 @@ function capture_image() {
     });
 
     capture_command.on('exit', (code) => {
-        console.log(count, 'exit: ' + code);
+        console.log(count, '[capture_command] exit: ' + code);
 
         console.timeEnd('capture');
         if (code === null) {
@@ -252,7 +252,7 @@ function capture_image() {
     });
 
     capture_command.on('error', (code) => {
-        console.log('error: ' + code);
+        console.log('[capture_command] error: ' + code);
     });
 }
 
