@@ -175,8 +175,12 @@ function geotag_image() {
 
                 fs.writeFileSync(files[0], newJpeg);
                 setTimeout(move_image, 1, './', './' + geotagging_dir + '/', files[0]);
-                if (gps.hasOwnProperty('_id')) {
-                    delete gps['_id'];
+                try {
+                    if (gps.hasOwnProperty('_id')) {
+                        delete gps['_id'];
+                    }
+                } catch (e) {
+                    console.log(e);
                 }
                 lib_mqtt_client.publish(geotagged_position_topic, JSON.stringify(gps));
 
@@ -184,7 +188,7 @@ function geotag_image() {
 
                 setTimeout(geotag_image, 100);
             } else {
-                if (tag_count > 200){
+                if (tag_count > 200) {
                     count = 0;
                     tag_count = 0;
                 }
