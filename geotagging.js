@@ -26,6 +26,7 @@ let geotagged_position_topic = '';
 
 let status = 'Init';
 let count = 0;
+let tag_count = 0;
 
 let gps_data = {};
 
@@ -183,6 +184,11 @@ function geotag_image() {
 
                 setTimeout(geotag_image, 100);
             } else {
+                if (tag_count > 200){
+                    count = 0;
+                    tag_count = 0;
+                }
+                tag_count++;
                 setTimeout(geotag_image, 100);
             }
         }
