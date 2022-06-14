@@ -145,7 +145,7 @@ function lib_mqtt_connect(broker_ip, port, control) {
                         let command_arr = message.toString().split(' ');
                         mission = command_arr[2];
 
-                        ftp_dir = 'FTP-' + moment().format('YYYY-MM-DD') + '-' + mission + '_' + drone_name;
+                        ftp_dir = 'FTP-' + moment().format('YYYY-MM-DDTHH') + '-' + mission + '-' + drone_name;
                         if (!ftp_client.closed) {
                             ftp_client.ensureDir("/" + ftp_dir);
                         } else {
