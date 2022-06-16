@@ -352,8 +352,10 @@ const checkUSB = new Promise((resolve, reject) => {
 
 function copy2USB(source, destination) {
     try {
-        !fs.existsSync(destination) && fs.mkdirSync(destination);
-        console.log('Create directory ---> ' + destination);
+        if (!fs.existsSync(destination)){
+            fs.mkdirSync(destination);
+            console.log('Create directory ---> ' + destination);
+        }
     } catch (e) {
         if (e.includes('permission denied')){
             console.log(e);
