@@ -65,7 +65,7 @@ function init() {
                 console.log('[checkCamera] stdout: ' + data);
             } else if (data.toString().includes('Camera summary:')) {
                 let summary = data.toString().split('\n');
-                console.log('[checkCamera] Connected with ' + summary.substring(7, summary.length - 2));
+                console.log('[checkCamera] Connected with ' + summary[2].substring(7, summary.length - 2));
             }
         });
         camera_test.stderr.on('data', (data) => {
