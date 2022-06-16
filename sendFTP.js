@@ -353,6 +353,7 @@ const checkUSB = new Promise((resolve, reject) => {
 function copy2USB(source, destination) {
     try {
         !fs.existsSync(destination) && fs.mkdirSync(destination);
+        console.log('Create directory ---> ' + destination);
     } catch (e) {
         if (e.includes('permission denied')){
             console.log(e);
@@ -361,6 +362,7 @@ function copy2USB(source, destination) {
 
     status = 'Copying';
     lib_mqtt_client.publish(my_status_topic, status);
+    console.log('Copy from ' + source + ' to ' + destination);
 
     fsextra.copy(source, destination, function (err) {
         if (err) {
