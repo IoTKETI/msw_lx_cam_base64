@@ -364,7 +364,7 @@ function copy2USB(source, destination) {
 
     status = 'Copying';
     lib_mqtt_client.publish(my_status_topic, status);
-    console.log('Copy from ' + source + ' to ' + destination);
+    console.log('Copy from [' + source + '] to [' + destination + ']');
 
     fsextra.copy(source, destination, function (err) {
         if (err) {
@@ -372,5 +372,6 @@ function copy2USB(source, destination) {
         }
         status = 'Finish';
         lib_mqtt_client.publish(my_status_topic, status);
+        console.log('Finish copy => from [' + source + '] to [' + destination + ']');
     });
 }
