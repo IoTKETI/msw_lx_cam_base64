@@ -61,7 +61,12 @@ function init() {
         console.log('Get camera summary to check connection');
 
         camera_test.stdout.on('data', (data) => {
-            console.log('[checkCamera] stdout: ' + data);
+            if (data.toString().includes('For debugging messages, ')) {
+                console.log('[checkCamera] stdout: ' + data);
+            } else if (data.toString().includes('Camera summary:')) {
+                let summary = data.toString().split('\n');
+                console.log('[checkCamera] Connected with ' + summary.substring(7, summary.length - 2));
+            }
         });
         camera_test.stderr.on('data', (data) => {
             if (data.includes('gphoto2: not found')) {
@@ -178,7 +183,7 @@ function lib_mqtt_connect(broker_ip, port, fc, control) {
 
 function capture_image() {
     console.time('capture');
-    // gphoto2 --capture-image-and-download --filename 20%y-%m-%dT%H:%M:%S.jpg --interval 5 --folder ./
+    // gphoto2 --capture-image-and-download --filename 20%y-%m-%dT%H:%M:%S.jpg --interval 3 --folder ./
     capture_command = spawn("gphoto2", ['--capture-image-and-download', '--filename', '20%y-%m-%dT%H_%M_%S.jpg', '--interval', interval, '--folder', './']);
 
     capture_command.stdout.on('data', (data) => {
