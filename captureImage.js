@@ -69,7 +69,9 @@ function init() {
                 status = 'Error';
                 let msg = status + ' - Please install gphoto library';
                 lib_mqtt_client.publish(my_status_topic, msg);
-                // TODO: gphoto2 library 설치 실행
+
+                setTimeout(install_gphoto, 100);
+
                 process.kill(camera_test.pid, 'SIGINT');
             } else if (data.includes('PTP Timeout')) {
                 status = 'Error';
@@ -86,11 +88,11 @@ function init() {
             }
         });
         camera_test.on('exit', (code) => {
-            console.log('[checkCamera] exit: ' + code);
             if (code === 0) {
                 status = 'Ready';
                 lib_mqtt_client.publish(my_status_topic, status);
             } else if (code === 1 || code === null) {
+                console.log('[checkCamera] exit: ' + code);
                 setTimeout(checkCamera, 1000);
             }
         });
@@ -210,11 +212,7 @@ function capture_image() {
             status = 'Ready';
             lib_mqtt_client.publish(my_status_topic, status);
             console.log('Operation cancelled.');
-        } else if (data.toString().includes('PTP General')) {
-            status = 'Ready';
-            lib_mqtt_client.publish(my_status_topic, status);
-            console.log('Cancelled.');
-        } else if (data.toString().includes('PTP Cancel Request')) {
+        } else if (data.toString().includes('PTP Cancel Request') || data.toString().includes('PTP General')) {
             status = 'Ready';
             lib_mqtt_client.publish(my_status_topic, status);
             console.log('Cancelled.');
@@ -260,7 +258,16 @@ function capture_image() {
     });
 }
 
-// TODO: gphoto2 library 설치 - spawn
+const install_gphoto = () => {
+    exec('sudo apt-get install -y gphoto2', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`exec error: ${error}`);
+            return;
+        }
+        console.log(`stdout: ${stdout}`);
+        console.error(`stderr: ${stderr}`);
+    });
+}
 
 setInterval(() => {
     if (status === 'Ready') {
