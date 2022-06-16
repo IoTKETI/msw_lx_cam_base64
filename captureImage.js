@@ -226,7 +226,14 @@ function capture_image() {
             let msg = status + ' - Board Memory Full';
             lib_mqtt_client.publish(my_status_topic, msg);
             process.kill(capture_command.pid, 'SIGINT');
-        } else if (data.toString().includes('PTP I/O Error') || data.toString().includes('Could not claim the USB')) {
+        } else if (data.toString().includes('PTP I/O Error') || data.toString().includes('An error occurred in the io-library')) {
+            status = 'Error';
+            let msg = status + ' - Reconnect to Camera';
+            lib_mqtt_client.publish(my_status_topic, msg);
+            process.kill(capture_command.pid, 'SIGINT');
+            setTimeout(capture_image, 1000);
+        } else {
+            console.log('[capture_command] stderr: ' + data);
             exec('gphoto2 --reset', (error, stdout, stderr) => {
                 if (error) {
                     console.error(`exec error: ${error}`);
@@ -235,9 +242,6 @@ function capture_image() {
                 console.log(`stdout: ${stdout}`);
                 console.error(`stderr: ${stderr}`);
             });
-            setTimeout(capture_image, 1000);
-        } else {
-            console.log('[capture_command] stderr: ' + data);
             status = 'Error';
             let msg = status + ' - stderr: ' + data;
             lib_mqtt_client.publish(my_status_topic, msg);
