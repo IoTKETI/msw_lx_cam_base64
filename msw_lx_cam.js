@@ -135,14 +135,15 @@ function DeleteSubscription(uri, cnt) {
             "X-M2M-RI": requestId,
         }
     };
-    console.log("\n[REQUEST]\n", options);
+    // console.log("\n[REQUEST]\n", options);
 
     request(options, function (error, response, body) {
         if (error) {
             console.log(error);
         } else {
-            console.log("\n[RESPONSE]\n", response.statusCode);
-            console.log(body);
+            // console.log("\n[RESPONSE]\n", response.statusCode);
+            // console.log(body);
+            console.log('Delete Subscription\n  ' + options.url);
             CreateSubscription(uri, cnt);
         }
     });
@@ -177,13 +178,13 @@ function CreateSubscription(uri, cnt) {
         json: representation
     };
 
-    console.log("\n[REQUEST]\n", options);
+    // console.log("\n[REQUEST]\n", options);
     request(options, function (error, response, body) {
         if (error) {
             console.log(error);
         } else {
-            console.log("\n[RESPONSE]\n", response.statusCode);
-            console.log(body);
+            // console.log("\n[RESPONSE]\n", response.statusCode);
+            console.log('Create Subscription\n  ' + options.url);
 
             if (response.statusCode === 409) {
                 DeleteSubscription(uri, cnt);
