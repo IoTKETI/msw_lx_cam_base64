@@ -236,41 +236,49 @@ function send_image_via_ftp() {
                     console.time('ftp');
                     console.time('ftpmove');
                     if (!ftp_client.closed) {
-                        ftp_client.uploadFrom('./' + geotagging_dir + '/' + files[0], "/" + ftp_dir + '/' + files[0]).then(() => {
-                            console.timeEnd('ftp');
-                            move_image('./' + geotagging_dir + '/', './' + ftp_dir + '/', files[0]).then((result) => {
-                                if (result === 'finish') {
-                                    count++;
+                        ftp_client.uploadFrom('./' + geotagging_dir + '/' + files[0], "/" + ftp_dir + '/' + files[0])
+                            .then(() => {
+                                console.timeEnd('ftp');
+                                move_image('./' + geotagging_dir + '/', './' + ftp_dir + '/', files[0])
+                                    .then((result) => {
+                                        if (result === 'finish') {
+                                            count++;
 
-                                    empty_count = 0;
-                                    let msg = status + ' ' + count + ' ' + files[0];
-                                    lib_mqtt_client.publish(my_status_topic, msg);
-                                    console.timeEnd('ftpmove');
+                                            empty_count = 0;
+                                            let msg = status + ' ' + count + ' ' + files[0];
+                                            lib_mqtt_client.publish(my_status_topic, msg);
+                                            console.timeEnd('ftpmove');
 
-                                    setTimeout(send_image_via_ftp, 200);
-                                } else {
-                                    setTimeout(send_image_via_ftp, 200);
-                                }
-                            }).catch((err) => {
-                                console.log(err);
-                                fs.stat('./' + ftp_dir + '/' + files[0], (err) => {
-                                    console.log(err);
-                                    if (err !== null && err.code === "ENOENT") {
-                                        console.log("[sendFTP]사진이 존재하지 않습니다.");
-                                    }
-                                    console.log("[sendFTP]이미 처리 후 옮겨진 사진 (" + files[0] + ") 입니다.");
-                                });
+                                            setTimeout(send_image_via_ftp, 200);
+                                        } else {
+                                            setTimeout(send_image_via_ftp, 200);
+                                        }
+                                    })
+                                    .catch((err) => {
+                                        console.log(err);
+                                        fs.stat('./' + ftp_dir + '/' + files[0], (err) => {
+                                            console.log(err);
+                                            if (err !== null && err.code === "ENOENT") {
+                                                console.log("[sendFTP]사진이 존재하지 않습니다.");
+                                            }
+                                            console.log("[sendFTP]이미 처리 후 옮겨진 사진 (" + files[0] + ") 입니다.");
+                                        });
+                                        setTimeout(send_image_via_ftp, 200);
+                                    });
+
+                                // count++;
+                                //
+                                // empty_count = 0;
+                                // let msg = status + ' ' + count;
+                                // lib_mqtt_client.publish(my_status_topic, msg);
+                                //
+                                // setTimeout(send_image_via_ftp, 5);
+                            })
+                            .catch(err => {
+                                console.log('[sendFTP] Upload Error -', err);
+
                                 setTimeout(send_image_via_ftp, 200);
-                            });
-
-                            // count++;
-                            //
-                            // empty_count = 0;
-                            // let msg = status + ' ' + count;
-                            // lib_mqtt_client.publish(my_status_topic, msg);
-                            //
-                            // setTimeout(send_image_via_ftp, 5);
-                        });
+                            })
                     } else {
                         ftp_client.close();
                         setTimeout(ftp_connect, 100, ftp_host, ftp_user, ftp_pw);
@@ -352,12 +360,12 @@ const checkUSB = new Promise((resolve, reject) => {
 
 function copy2USB(source, destination) {
     try {
-        if (!fs.existsSync(destination)){
+        if (!fs.existsSync(destination)) {
             fs.mkdirSync(destination);
             console.log('Create directory ---> ' + destination);
         }
     } catch (e) {
-        if (e.includes('permission denied')){
+        if (e.includes('permission denied')) {
             console.log(e);
         }
     }
