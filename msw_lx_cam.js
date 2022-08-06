@@ -42,7 +42,7 @@ try {
         target: 'armv7l',
         description: '[name] [server]',
         scripts: "sh lib_lx_cam.sh",
-        data: ["Capture_Status", "Geotag_Status", "FTP_Status", "Captured_GPS", "Geotagged_GPS"],
+        data: ["Capture_Status", "Geotag_Status", "Send_Status", "Captured_GPS", "Geotagged_GPS"],
         control: ['Capture']
     };
     config.lib.push(add_lib);
@@ -247,9 +247,9 @@ function msw_mqtt_connect(broker_ip, port) {
                                 if (jsonObj.pc['m2m:sgn'].nev.rep['m2m:cin']) {
                                     let cinObj = jsonObj.pc['m2m:sgn'].nev.rep['m2m:cin']
                                     if (getType(cinObj.con) == 'string') {
-                                        local_msw_mqtt_client.publish(lib_ctl_topic, cinObj.con);
+                                        setTimeout(on_receive_from_muv, parseInt(Math.random() * 5), lib_ctl_topic, cinObj.con);
                                     } else {
-                                        local_msw_mqtt_client.publish(lib_ctl_topic, JSON.stringify(cinObj.con));
+                                        setTimeout(on_receive_from_muv, parseInt(Math.random() * 5), lib_ctl_topic, JSON.stringify(cinObj.con));
                                     }
                                 }
                             }

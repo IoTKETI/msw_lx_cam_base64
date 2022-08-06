@@ -45,7 +45,7 @@ function init() {
         lib.target = 'armv7l';
         lib.description = "[name]";
         lib.scripts = './' + my_lib_name;
-        lib.data = ["Capture_Status", "Geotag_Status", "FTP_Status", "Captured_GPS", "Geotagged_GPS"];
+        lib.data = ["Capture_Status", "Geotag_Status", "Send_Status", "Captured_GPS", "Geotagged_GPS"];
         lib.control = ['Capture'];
     }
 
