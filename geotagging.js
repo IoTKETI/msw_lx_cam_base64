@@ -173,37 +173,12 @@ function geotag_image() {
                 let newData = piexif.insert(exifbytes, data);
                 let newJpeg = Buffer.from(newData, "binary");
 
-                fs.writeFile(files[0], newJpeg, (err) => {
-                    if (err){
-                        console.log(err)
-                        setTimeout(geotag_image, 100);
-                    } else {
-                        // setTimeout(move_image, 1, './', './' + geotagging_dir + '/', files[0]);
-                        move_image('./', './' + geotagging_dir + '/', files[0])
-                            .then((result) => {
-                                if (result === 'finish') {
-                                    status = 'Geotagging';
-                                    count++;
-                                    let msg = status + ' ' + count;
-                                    lib_mqtt_client.publish(my_status_topic, msg);
-
-                                    setTimeout(geotag_image, 100);
-                                } else {
-                                    setTimeout(geotag_image, 100);
-                                }
-                            }).catch((err) => {
-                            // console.log(err);
-                            fs.stat('./' + geotagging_dir + '/' + files[0], (err) => {
-                                console.log(err);
-                                if (err !== null && err.code === "ENOENT") {
-                                    console.log("[geotagging]사진이 존재하지 않습니다.");
-                                }
-                                console.log("[geotagging]이미 처리 후 옮겨진 사진 (" + files[0] + ") 입니다.");
-                            });
-                            setTimeout(geotag_image, 100);
-                        });
-                    }
-                });
+                fs.writeFileSync(files[0], newJpeg);
+                setTimeout(move_image, 1, './', './' + geotagging_dir + '/', files[0]);
+                status = 'Geotagging';
+                count++;
+                let msg = status + ' ' + count;
+                lib_mqtt_client.publish(my_status_topic, msg);
                 try {
                     if (gps.hasOwnProperty('_id')) {
                         delete gps['_id'];
@@ -242,36 +217,24 @@ function Degree2DMS(coordinate) {
 //     return coordinate
 // }
 
-// function move_image(from, to, image) {
-//     try {
-//         fs.renameSync(from + image, to + image);
-//         // console.log('move from ' + from + image + ' to ' + to + image);
-//         status = 'Geotagging';
-//         count++;
-//         let msg = status + ' ' + count;
-//         lib_mqtt_client.publish(my_status_topic, msg);
-//         // captured_arr = [];
-//     } catch (e) {
-//         fs.stat(to + image, (err) => {
-//             if (err !== null && err.code === "ENOENT") {
-//                 console.log("[geotagging] 사진이 존재하지 않습니다.");
-//             }
-//             console.log("[geotagging] 이미 처리 후 옮겨진 사진 (" + image + ") 입니다.");
-//         });
-//         // captured_arr = [];
-//     }
-// }
-
-const move_image = ((from, to, image) => {
-    return new Promise((resolve, reject) => {
-        try {
-            fs.copyFile(from + image, to + image, (err) => {
-                fs.unlink(from + image, (err) => {
-                });
+function move_image(from, to, image) {
+    try {
+        // fs.renameSync(from + image, to + image);
+        fs.copyFile(from + image, to + image, (err) => {
+            fs.unlink(from + image, (err) => {
             });
-            resolve('finish');
-        } catch (e) {
-            reject('no such file');
-        }
-    });
-});
+        });// console.log('move from ' + from + image + ' to ' + to + image);
+
+        // captured_arr = [];
+    } catch (e) {
+        fs.stat(to + image, (err) => {
+            if (err !== null && err.code === "ENOENT") {
+                console.log("[geotagging] 사진이 존재하지 않습니다.");
+            }
+            console.log("[geotagging] 이미 처리 후 옮겨진 사진 (" + image + ") 입니다.");
+        });
+        // captured_arr = [];
+    }
+}
+
+

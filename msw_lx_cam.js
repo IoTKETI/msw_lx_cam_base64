@@ -71,6 +71,9 @@ if (!set_timezone.set_timezone) {
         }
         console.log(`stdout: ${stdout}`);
         console.error(`stderr: ${stderr}`);
+
+        set_timezone.set_timezone = true
+        fs.writeFileSync('./set_timezone.json', JSON.stringify(set_timezone, null, 4), 'utf8');
     });
 }
 
