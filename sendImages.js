@@ -266,13 +266,21 @@ setInterval(() => {
 }, 1000);
 
 const move_image = ((from, to, image) => {
+    console.time('moveImage')
     return new Promise((resolve, reject) => {
         try {
-            fs.copyFile(from + image, to + image, (err) => {
-                fs.unlink(from + image, (err) => {
-                });
+            fs.rename(from + image, to + image, (err) => {
+                if (err){
+                    reject(err);
+                } else {
+                    resolve('finish');
+                    console.timeEnd('moveImage')
+                }
+                // fs.copyFile(from + image, to + image, (err) => {
+                //     fs.unlink(from + image, (err) => {
+                //     });
+                // });
             });
-            resolve('finish');
         } catch (e) {
             reject('no such file');
         }
