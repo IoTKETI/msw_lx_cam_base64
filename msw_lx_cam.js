@@ -8,6 +8,7 @@ const spawn = require('child_process').spawn;
 const {nanoid} = require('nanoid');
 const util = require("util");
 const request = require('request');
+const {exec} = require("child_process");
 
 global.sh_man = require('./http_man');
 
@@ -18,7 +19,7 @@ config.name = 'msw_lx_cam';
 global.drone_info = '';
 
 try {
-    drone_info = JSON.parse(fs.readFileSync('../drone_info.json', 'utf8'));
+    drone_info = JSON.parse(fs.readFileSync('./drone_info.json', 'utf8'));
 
     config.directory_name = config.name + '_' + config.name;
     config.gcs = drone_info.gcs;
@@ -54,6 +55,25 @@ let msw_sub_fc_topic = [];
 msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/global_position_int');
 
 let msw_sub_lib_topic = [];
+
+// TODO: 파일 읽어서 시간 동기화 여부 확인. 없으면 생성하고 실행
+let set_timezone = {}
+try {
+    set_timezone = JSON.parse(fs.readFileSync('./set_timezone.json', 'utf8'));
+} catch (e) {
+    set_timezone.set_timezone = false
+    fs.writeFileSync('./set_timezone.json', JSON.stringify(set_timezone, null, 4), 'utf8');
+}
+if (!set_timezone.set_timezone){
+    exec('sudo timedatectl set-timezone Asia/Seoul', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`exec error: ${error}`);
+            return;
+        }
+        console.log(`stdout: ${stdout}`);
+        console.error(`stderr: ${stderr}`);
+    });
+}
 
 function init() {
     if (config.lib.length > 0) {
