@@ -186,9 +186,7 @@ function send_image() {
                 if (files.length > 0) {
                     console.time('send')
                     let readFile = fs.readFileSync('./' + geotagging_dir + '/' + files[0]); //이미지 파일 읽기
-                    console.time('encoding')
                     let encode = Buffer.from(readFile).toString('base64'); //파일 인코딩
-                    console.timeEnd('encoding')
                     try {
                         let header = {
                             maxContentLength: Infinity,
@@ -201,7 +199,6 @@ function send_image() {
                             },
                             header
                         ).then(function (response) {
-                            console.time('moveImage');
                             move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', files[0])
                                 .then((result) => {
                                     if (result === 'finish') {
@@ -210,22 +207,22 @@ function send_image() {
                                         empty_count = 0;
                                         let msg = status + ' ' + count + ' ' + files[0];
                                         lib_mqtt_client.publish(my_status_topic, msg);
-                                        console.timeEnd('moveImage');
+                                        console.timeEnd("send");
 
-                                        setTimeout(send_image, 200);
+                                        setTimeout(send_image, 100);
                                     } else {
-                                        setTimeout(send_image, 200);
+                                        setTimeout(send_image, 100);
                                     }
                                 }).catch((err) => {
-                                console.log(err);
-                                fs.stat('./' + sended_dir + '/' + files[0], (err) => {
-                                    console.log(err);
-                                    if (err !== null && err.code === "ENOENT") {
-                                        console.log("[sendFTP]사진이 존재하지 않습니다.");
-                                    }
-                                    console.log("[sendFTP]이미 처리 후 옮겨진 사진 (" + files[0] + ") 입니다.");
-                                });
-                                setTimeout(send_image, 200);
+                                // console.log(err);
+                                    fs.stat('./' + sended_dir + '/' + files[0], (err) => {
+                                        console.log(err);
+                                        if (err !== null && err.code === "ENOENT") {
+                                            console.log("[sendImages]사진이 존재하지 않습니다.");
+                                        }
+                                        console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + files[0] + ") 입니다.");
+                                    });
+                                    setTimeout(send_image, 100);
                             });
                         }).catch(function (error) {
                             console.log(error);
@@ -233,7 +230,6 @@ function send_image() {
                     } catch (err) {
                         console.log(err);
                     }
-                    console.timeEnd("send");
                 } else {
                     if (status === 'Started') {
                         empty_count++;

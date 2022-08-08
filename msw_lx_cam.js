@@ -213,7 +213,7 @@ function CreateSubscription(uri, cnt) {
                 cnt = 'Geotagged_GPS';
                 DeleteSubscription(uri, cnt);
             } else if (cnt === 'Geotagged_GPS') {
-                cnt = 'FTP_Status';
+                cnt = 'Send_Status';
                 DeleteSubscription(uri, cnt);
             }
         }
