@@ -226,6 +226,7 @@ function send_image() {
                             });
                         }).catch(function (error) {
                             console.log(error);
+                            setTimeout(send_image, 100);
                         });
                     } catch (err) {
                         console.log(err);

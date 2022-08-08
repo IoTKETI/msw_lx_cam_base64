@@ -173,31 +173,37 @@ function geotag_image() {
                 let newData = piexif.insert(exifbytes, data);
                 let newJpeg = Buffer.from(newData, "binary");
 
-                fs.writeFileSync(files[0], newJpeg);
-                // setTimeout(move_image, 1, './', './' + geotagging_dir + '/', files[0]);
-                move_image('./', './' + geotagging_dir + '/', files[0])
-                    .then((result) => {
-                        if (result === 'finish') {
-                            status = 'Geotagging';
-                            count++;
-                            let msg = status + ' ' + count;
-                            lib_mqtt_client.publish(my_status_topic, msg);
-
-                            setTimeout(geotag_image, 100);
-                        } else {
-                            setTimeout(geotag_image, 100);
-                        }
-                    }).catch((err) => {
-                        // console.log(err);
-                        fs.stat('./' + geotagging_dir + '/' + files[0], (err) => {
-                            console.log(err);
-                            if (err !== null && err.code === "ENOENT") {
-                                console.log("[geotagging]사진이 존재하지 않습니다.");
-                            }
-                            console.log("[geotagging]이미 처리 후 옮겨진 사진 (" + files[0] + ") 입니다.");
-                        });
+                fs.writeFile(files[0], newJpeg, (err) => {
+                    if (err){
+                        console.log(err)
                         setTimeout(geotag_image, 100);
-                    });
+                    } else {
+                        // setTimeout(move_image, 1, './', './' + geotagging_dir + '/', files[0]);
+                        move_image('./', './' + geotagging_dir + '/', files[0])
+                            .then((result) => {
+                                if (result === 'finish') {
+                                    status = 'Geotagging';
+                                    count++;
+                                    let msg = status + ' ' + count;
+                                    lib_mqtt_client.publish(my_status_topic, msg);
+
+                                    setTimeout(geotag_image, 100);
+                                } else {
+                                    setTimeout(geotag_image, 100);
+                                }
+                            }).catch((err) => {
+                            // console.log(err);
+                            fs.stat('./' + geotagging_dir + '/' + files[0], (err) => {
+                                console.log(err);
+                                if (err !== null && err.code === "ENOENT") {
+                                    console.log("[geotagging]사진이 존재하지 않습니다.");
+                                }
+                                console.log("[geotagging]이미 처리 후 옮겨진 사진 (" + files[0] + ") 입니다.");
+                            });
+                            setTimeout(geotag_image, 100);
+                        });
+                    }
+                });
                 try {
                     if (gps.hasOwnProperty('_id')) {
                         delete gps['_id'];
