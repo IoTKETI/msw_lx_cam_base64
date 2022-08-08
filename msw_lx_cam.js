@@ -56,7 +56,6 @@ msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + 
 
 let msw_sub_lib_topic = [];
 
-// TODO: 파일 읽어서 시간 동기화 여부 확인. 없으면 생성하고 실행
 let set_timezone = {}
 try {
     set_timezone = JSON.parse(fs.readFileSync('./set_timezone.json', 'utf8'));
