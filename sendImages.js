@@ -144,11 +144,19 @@ function lib_mqtt_connect(broker_ip, port, control) {
                         !fs.existsSync(sended_dir) && fs.mkdirSync(sended_dir);
                         console.log('[send_lib_mqtt] Create ( ' + sended_dir + ' ) directory');
 
+                        axios.post("http://" + host + ":4500/lists/",
+                            {
+                                listid: sended_dir,
+                                content: []
+                            }
+                        ).then((response) => {
+                            status = 'Start';
+                            let msg = status + ' ' + sended_dir;
+                            lib_mqtt_client.publish(my_status_topic, msg);
+                        }).catch((error) => {
+                            console.log('[list init]', error.message)
+                        })
                         count = 0;
-
-                        status = 'Start';
-                        let msg = status + ' ' + sended_dir;
-                        lib_mqtt_client.publish(my_status_topic, msg);
                     }
                 } else if (message.toString() === 'copy') {
                     checkUSB.then((result) => {
@@ -175,29 +183,42 @@ function lib_mqtt_connect(broker_ip, port, control) {
 }
 
 let empty_count = 0;
+let images = []
 
 function send_image() {
     try {
+        console.log('==============================================================')
+        console.time('readImages')
         fs.readdir('./' + geotagging_dir + '/', (err, files) => {
             if (err) {
                 console.log(err);
                 setTimeout(send_image, 50);
             } else {
+                console.timeEnd('readImages')
                 if (files.length > 0) {
+                    console.time('all')
+                    console.time('read')
+                    console.time('encoding')
                     console.time('send')
                     let readFile = fs.readFileSync('./' + geotagging_dir + '/' + files[0]); //이미지 파일 읽기
+                    console.timeEnd('read')
                     let encode = Buffer.from(readFile).toString('base64'); //파일 인코딩
-                    try {
-                        let header = {
-                            maxContentLength: Infinity,
-                            maxBodyLength: Infinity,
-                        };
-                        axios.post("http://" + host + ":4500/images",
-                            {
-                                imageid: files[0].split('.')[0],
-                                content: "data:image/png;base64," + encode,
-                            },
-                            header
+                    console.timeEnd('encoding')
+                    let header = {
+                        maxContentLength: Infinity,
+                        maxBodyLength: Infinity,
+                    };
+                    axios.post("http://" + host + ":4500/images",
+                        {
+                            imageid: files[0],
+                            content: "data:image/jpg;base64," + encode,
+                        },
+                        header
+                    ).then(function (response) {
+                        console.timeEnd("send");
+                        images.push(files[0])
+                        axios.put("http://" + host + ":4500/lists/listid/" + sended_dir,
+                            {content: images}
                         ).then(function (response) {
                             move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', files[0])
                                 .then((result) => {
@@ -207,30 +228,42 @@ function send_image() {
                                         empty_count = 0;
                                         let msg = status + ' ' + count + ' ' + files[0];
                                         lib_mqtt_client.publish(my_status_topic, msg);
-                                        console.timeEnd("send");
+                                        console.timeEnd("all");
 
                                         setTimeout(send_image, 100);
+                                        return
                                     } else {
+                                        console.timeEnd("all");
                                         setTimeout(send_image, 100);
+                                        return
                                     }
-                                }).catch((err) => {
-                                // console.log(err);
-                                    fs.stat('./' + sended_dir + '/' + files[0], (err) => {
-                                        console.log(err);
-                                        if (err !== null && err.code === "ENOENT") {
-                                            console.log("[sendImages]사진이 존재하지 않습니다.");
-                                        }
-                                        console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + files[0] + ") 입니다.");
-                                    });
-                                    setTimeout(send_image, 100);
+                                }).catch((error) => {
+                                // console.log(error);
+                                fs.stat('./' + sended_dir + '/' + files[0], (err) => {
+                                    console.log(err);
+                                    if (err !== null && err.code === "ENOENT") {
+                                        console.log("[sendImages]사진이 존재하지 않습니다.");
+                                    }
+                                    console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + files[0] + ") 입니다.");
+                                });
+                                console.timeEnd("all");
+                                setTimeout(send_image, 100);
+                                return
                             });
-                        }).catch(function (error) {
-                            console.log(error);
+                        }).catch((error) => {
+                            console.log('[list_update]', error.message)
+                            console.timeEnd("send");
+                            console.timeEnd("all");
                             setTimeout(send_image, 100);
-                        });
-                    } catch (err) {
-                        console.log(err);
-                    }
+                            return
+                        })
+                    }).catch(function (error) {
+                        console.log('[image_send]', error.message)
+                        console.timeEnd("send");
+                        console.timeEnd("all");
+                        setTimeout(send_image, 100);
+                        return
+                    });
                 } else {
                     if (status === 'Started') {
                         empty_count++;
@@ -243,15 +276,18 @@ function send_image() {
                             lib_mqtt_client.publish(my_status_topic, msg);
                         } else {
                             setTimeout(send_image, 50);
+                            return
                         }
                     } else {
                         setTimeout(send_image, 100);
+                        return
                     }
                 }
             }
         });
     } catch (e) {
         setTimeout(send_image, 100);
+        return
     }
 }
 
@@ -270,17 +306,23 @@ const move_image = ((from, to, image) => {
     return new Promise((resolve, reject) => {
         try {
             fs.rename(from + image, to + image, (err) => {
-                if (err){
+                if (err) {
                     reject(err);
                 } else {
                     resolve('finish');
                     console.timeEnd('moveImage')
                 }
-                // fs.copyFile(from + image, to + image, (err) => {
-                //     fs.unlink(from + image, (err) => {
-                //     });
-                // });
             });
+            // fs.copyFile(from + image, to + image, (err) => {
+            //     fs.unlink(from + image, (err) => {
+            //         if (err) {
+            //             reject(err);
+            //         } else {
+            //             resolve('finish');
+            //             console.timeEnd('moveImage')
+            //         }
+            //     });
+            // });
         } catch (e) {
             reject('no such file');
         }

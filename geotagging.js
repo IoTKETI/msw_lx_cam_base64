@@ -219,9 +219,11 @@ function Degree2DMS(coordinate) {
 
 function move_image(from, to, image) {
     try {
+        console.time('[Geo]')
         // fs.renameSync(from + image, to + image);
         fs.copyFile(from + image, to + image, (err) => {
             fs.unlink(from + image, (err) => {
+                console.timeEnd('[Geo]')
             });
         });// console.log('move from ' + from + image + ' to ' + to + image);
 
