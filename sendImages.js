@@ -239,6 +239,7 @@ function send_image() {
                         empty_count++;
                         console.log('Waiting - ' + empty_count);
                         if (empty_count > 200) {
+                            console.timeEnd('Finish')
                             status = 'Finish';
                             empty_count = 0;
                             let msg = status + ' ' + count;
@@ -263,6 +264,7 @@ setInterval(() => {
         status = 'Started';
 
         send_image();
+        console.time('Finish')
     }
 }, 1000);
 

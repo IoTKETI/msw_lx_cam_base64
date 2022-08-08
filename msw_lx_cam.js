@@ -63,7 +63,7 @@ try {
     set_timezone.set_timezone = false
     fs.writeFileSync('./set_timezone.json', JSON.stringify(set_timezone, null, 4), 'utf8');
 }
-if (!set_timezone.set_timezone){
+if (!set_timezone.set_timezone) {
     exec('sudo timedatectl set-timezone Asia/Seoul', (error, stdout, stderr) => {
         if (error) {
             console.error(`exec error: ${error}`);
