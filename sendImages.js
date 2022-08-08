@@ -27,8 +27,7 @@ let control_topic = '';
 
 let status = 'Init';
 let count = 0;
-// let external_memory = '/media/pi/';
-let external_memory = '/Users/wonseok/Downloads/msw_lx_cam/';
+let external_memory = '/media/pi/';
 
 init();
 
