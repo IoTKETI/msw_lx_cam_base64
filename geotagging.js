@@ -57,6 +57,7 @@ function init() {
     lib_mqtt_connect('localhost', 1883);
 
     geotag_image();
+    console.time('[Geo]Finish')
 }
 
 function lib_mqtt_connect(broker_ip, port) {
@@ -116,6 +117,7 @@ function lib_mqtt_connect(broker_ip, port) {
 }
 
 function geotag_image() {
+    console.log('==============================================================')
     fs.readdir('./', (err, files) => {
         if (err) {
             console.log('[' + geotagging_dir + '] is empty directory..');
@@ -184,7 +186,7 @@ function geotag_image() {
                         delete gps['_id'];
                     }
                 } catch (e) {
-                    console.log(e);
+                    // console.log(e);
                 }
                 lib_mqtt_client.publish(geotagged_position_topic, JSON.stringify(gps));
 
@@ -195,9 +197,11 @@ function geotag_image() {
                 if (tag_count > 200) {
                     count = 0;
                     tag_count = 0;
+                    console.timeEnd('[Geo]Finish')
+                } else {
+                    tag_count++;
+                    setTimeout(geotag_image, 100);
                 }
-                tag_count++;
-                setTimeout(geotag_image, 100);
             }
         }
     });
@@ -219,11 +223,11 @@ function Degree2DMS(coordinate) {
 
 function move_image(from, to, image) {
     try {
-        console.time('[Geo]')
+        console.time('[Geo]move')
         // fs.renameSync(from + image, to + image);
         fs.copyFile(from + image, to + image, (err) => {
             fs.unlink(from + image, (err) => {
-                console.timeEnd('[Geo]')
+                console.timeEnd('[Geo]move')
             });
         });// console.log('move from ' + from + image + ' to ' + to + image);
 

@@ -267,7 +267,7 @@ function send_image() {
                 } else {
                     if (status === 'Started') {
                         empty_count++;
-                        console.log('Waiting - ' + empty_count);
+                        // console.log('Waiting - ' + empty_count);
                         if (empty_count > 200) {
                             console.timeEnd('Finish')
                             status = 'Finish';
