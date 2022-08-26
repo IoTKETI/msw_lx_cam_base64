@@ -156,6 +156,14 @@ function lib_mqtt_connect(broker_ip, port, control) {
                             lib_mqtt_client.publish(my_status_topic, msg);
                         }).catch((error) => {
                             console.log('[list init]', error.message)
+                            if (error.message.includes('500')) {
+                                axios.get("http://" + host + ":4500/lists/listid/" + sended_dir)
+                                    .then((response) => {
+                                        console.log(response.data.content)
+                                        images = response.data.content
+                                    }).catch((error) => {
+                                })
+                            }
                         })
                         count = 0;
                     }
