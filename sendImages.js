@@ -29,6 +29,7 @@ let control_topic = '';
 let status = 'Init';
 let count = 0;
 let external_memory = '/media/pi/';
+let copyable = false;
 
 init();
 
@@ -174,9 +175,11 @@ function lib_mqtt_connect(broker_ip, port, control) {
                 } else if (message.toString() === 'copy') {
                     checkUSB.then((result) => {
                         if (result === 'finish') {
-                            status = 'Copy';
-                            lib_mqtt_client.publish(my_status_topic, status);
-                            copy2USB(sended_dir, external_memory + '/' + sended_dir);
+                            if (copyable){
+                                status = 'Copy';
+                                lib_mqtt_client.publish(my_status_topic, status);
+                                copy2USB(sended_dir, external_memory + '/' + sended_dir);
+                            }
                         } else {
                             status = 'Finish';
                             let msg = status + ' Not found external memory';
@@ -341,17 +344,19 @@ const move_image = ((from, to, image) => {
     });
 });
 
-// const checkUSB = new Promise((resolve, reject) => {
-//     // 외장 메모리 존재 여부 확인
-//     fs.readdirSync(external_memory, {withFileTypes: true}).forEach(p => {
-//         let dir = p.name;
-//         if (p.isDirectory()) {
-//             external_memory += dir;
-//             console.log('외장 메모리 경로 : ' + external_memory);
-//         }
-//     });
-//     resolve('finish');
-// });
+const checkUSB = new Promise((resolve, reject) => {
+    // 외장 메모리 존재 여부 확인
+    fs.readdirSync(external_memory, {withFileTypes: true}).forEach(p => {
+        let dir = p.name;
+        if (p.isDirectory()) {
+            external_memory += dir;
+            console.log('외장 메모리 경로 : ' + external_memory);
+            copyable = true;
+            return;
+        }
+    });
+    resolve('finish');
+});
 
 function copy2USB(source, destination) {
     try {

@@ -26,9 +26,27 @@ let geotagged_position_topic = '';
 
 let status = 'Init';
 let count = 0;
-let tag_count = 0;
+
+let external_memory = '/media/pi/';
+let dir_name = '';
+
+let copyable = false;
 
 let gps_data = {};
+
+const checkUSB = new Promise((resolve, reject) => {
+    // 외장 메모리 존재 여부 확인
+    fs.readdirSync(external_memory, {withFileTypes: true}).forEach(p => {
+        let dir = p.name;
+        if (p.isDirectory()) {
+            external_memory = external_memory + dir;
+            console.log('외장 메모리 : ' + dir);
+            copyable = true;
+            return;
+        }
+    });
+    resolve('finish');
+});
 
 init();
 
@@ -55,6 +73,31 @@ function init() {
     geotagged_position_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][4];
 
     lib_mqtt_connect('localhost', 1883);
+
+    let dirName_flag = false;
+    checkUSB.then((result) => {
+        if (result === 'finish') {
+            dir_name = moment().format('YYYY-MM-DDTHH')
+            console.log(external_memory)
+            fs.readdirSync(external_memory, {withFileTypes: true}).forEach(p => {
+                let dir = p.name;
+                if (dir === dir_name) {
+                    if (p.isDirectory()) {
+                        external_memory = external_memory + '/' + dir;
+                        console.log('외장 메모리 경로 : ' + external_memory);
+                        dirName_flag = true;
+                        return;
+                    }
+                }
+            });
+
+            if (!dirName_flag) {
+                external_memory = external_memory + '/' + dir_name;
+                fs.mkdirSync(external_memory);
+                console.log('Create directory ---> ' + external_memory);
+            }
+        }
+    });
 
     geotag_image();
     console.time('[Geo]Finish')
@@ -116,6 +159,8 @@ function lib_mqtt_connect(broker_ip, port) {
     }
 }
 
+let gps;
+
 function geotag_image() {
     fs.readdir('./', (err, files) => {
         if (err) {
@@ -132,7 +177,6 @@ function geotag_image() {
                 let data = jpeg.toString("binary");
                 let exifObj = piexif.load(data);
 
-                let gps;
                 try {
                     gps = gps_filename.findOne({image: files[0]})._settledValue;
                 } catch (e) {
@@ -175,25 +219,18 @@ function geotag_image() {
                 let newJpeg = Buffer.from(newData, "binary");
 
                 fs.writeFileSync(files[0], newJpeg);
-                setTimeout(move_image, 1, './', './' + geotagging_dir + '/', files[0]);
-                status = 'Geotagging';
-                count++;
-                let msg = status + ' ' + count;
-                lib_mqtt_client.publish(my_status_topic, msg);
-                try {
-                    if (gps.hasOwnProperty('_id')) {
-                        delete gps['_id'];
-                    }
-                } catch (e) {
-                    // console.log(e);
+
+                if (copyable) {
+                    fs.copyFile('./' + files[0], external_memory + '/' + files[0], (err) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
                 }
-                lib_mqtt_client.publish(geotagged_position_topic, JSON.stringify(gps));
+                setTimeout(move_image, 1, './', './' + geotagging_dir + '/', files[0]);
 
-                console.timeEnd('geotag');
-
-                setTimeout(geotag_image, 100);
             } else {
-                    setTimeout(geotag_image, 100);
+                setTimeout(geotag_image, 100);
             }
         }
     });
@@ -218,10 +255,32 @@ function move_image(from, to, image) {
         console.time('[Geo]move')
         // fs.renameSync(from + image, to + image);
         fs.copyFile(from + image, to + image, (err) => {
+            if (err) {
+                console.log(err);
+            }
             fs.unlink(from + image, (err) => {
                 console.timeEnd('[Geo]move')
+                console.log(image)
+                status = 'Geotagging';
+                count++;
+                let msg = status + ' ' + count;
+                lib_mqtt_client.publish(my_status_topic, msg);
+                try {
+                    if (gps.hasOwnProperty('_id')) {
+                        delete gps['_id'];
+                    }
+                } catch (e) {
+                    // console.log(e);
+                }
+                lib_mqtt_client.publish(geotagged_position_topic, JSON.stringify(gps));
+
+                console.timeEnd('geotag');
+
+                setTimeout(geotag_image, 100);
             });
-        });// console.log('move from ' + from + image + ' to ' + to + image);
+        });
+
+        // console.log('move from ' + from + image + ' to ' + to + image);
 
         // captured_arr = [];
     } catch (e) {
@@ -234,5 +293,3 @@ function move_image(from, to, image) {
         // captured_arr = [];
     }
 }
-
-
