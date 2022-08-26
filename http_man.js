@@ -28,15 +28,14 @@ function http_request(origin, path, method, ty, bodyString, callback) {
         }
     };
 
-    if(bodyString.length > 0) {
+    if (bodyString.length > 0) {
         options.headers['Content-Length'] = bodyString.length;
     }
 
-    if(method === 'post') {
-        var a = (ty==='') ? '': ('; ty='+ty);
+    if (method === 'post') {
+        var a = (ty === '') ? '' : ('; ty=' + ty);
         options.headers['Content-Type'] = 'application/vnd.onem2m-res+json' + a;
-    }
-    else if(method === 'put') {
+    } else if (method === 'put') {
         options.headers['Content-Type'] = 'application/vnd.onem2m-res+json';
     }
 
@@ -53,15 +52,13 @@ function http_request(origin, path, method, ty, bodyString, callback) {
 
         res.on('end', function () {
             try {
-                if(res_body == '') {
+                if (res_body == '') {
                     jsonObj = {};
-                }
-                else {
+                } else {
                     jsonObj = JSON.parse(res_body);
                 }
                 callback(res.headers['x-m2m-rsc'], jsonObj);
-            }
-            catch (e) {
+            } catch (e) {
                 console.log('[http_adn] json parse error');
                 jsonObj = {};
                 jsonObj.dbg = res_body;
@@ -87,7 +84,7 @@ function http_request(origin, path, method, ty, bodyString, callback) {
     req.end();
 }
 
-exports.crtci = function(parent, count, content_obj, socket, callback) {
+exports.crtci = function (parent, count, content_obj, socket, callback) {
     var results_ci = {};
     var bodyString = '';
 

@@ -175,7 +175,7 @@ function lib_mqtt_connect(broker_ip, port, control) {
                 } else if (message.toString() === 'copy') {
                     checkUSB.then((result) => {
                         if (result === 'finish') {
-                            if (copyable){
+                            if (copyable) {
                                 status = 'Copy';
                                 lib_mqtt_client.publish(my_status_topic, status);
                                 copy2USB(sended_dir, external_memory + '/' + sended_dir);

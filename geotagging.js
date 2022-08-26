@@ -77,24 +77,26 @@ function init() {
     let dirName_flag = false;
     checkUSB.then((result) => {
         if (result === 'finish') {
-            dir_name = moment().format('YYYY-MM-DDTHH')
-            console.log(external_memory)
-            fs.readdirSync(external_memory, {withFileTypes: true}).forEach(p => {
-                let dir = p.name;
-                if (dir === dir_name) {
-                    if (p.isDirectory()) {
-                        external_memory = external_memory + '/' + dir;
-                        console.log('외장 메모리 경로 : ' + external_memory);
-                        dirName_flag = true;
-                        return;
+            if (copyable) {
+                dir_name = moment().format('YYYY-MM-DDTHH')
+                console.log(external_memory)
+                fs.readdirSync(external_memory, {withFileTypes: true}).forEach(p => {
+                    let dir = p.name;
+                    if (dir === dir_name) {
+                        if (p.isDirectory()) {
+                            external_memory = external_memory + '/' + dir;
+                            console.log('외장 메모리 경로 : ' + external_memory);
+                            dirName_flag = true;
+                            return;
+                        }
                     }
-                }
-            });
+                });
 
-            if (!dirName_flag) {
-                external_memory = external_memory + '/' + dir_name;
-                fs.mkdirSync(external_memory);
-                console.log('Create directory ---> ' + external_memory);
+                if (!dirName_flag) {
+                    external_memory = external_memory + '/' + dir_name;
+                    fs.mkdirSync(external_memory);
+                    console.log('Create directory ---> ' + external_memory);
+                }
             }
         }
     });
