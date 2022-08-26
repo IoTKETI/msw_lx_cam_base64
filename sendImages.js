@@ -161,7 +161,11 @@ function lib_mqtt_connect(broker_ip, port, control) {
                                     .then((response) => {
                                         console.log(response.data.content)
                                         images = response.data.content
+                                        status = 'Start';
+                                        let msg = status + ' ' + sended_dir;
+                                        lib_mqtt_client.publish(my_status_topic, msg);
                                     }).catch((error) => {
+                                    console.log('[list init]', error.message)
                                 })
                             }
                         })
