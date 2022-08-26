@@ -2,7 +2,7 @@
     "name": "lib_lx_cam",
     "target": "armv6",
     "description": "[name]",
-    "scripts": "sh lib_lx_cam.sh",
+    "scripts": "./lib_lx_cam.js",
     "data": [
         "Capture_Status",
         "Geotag_Status",

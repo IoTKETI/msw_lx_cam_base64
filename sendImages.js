@@ -14,9 +14,10 @@ const my_lib_name = 'lib_lx_cam';
 
 let mission = '';
 let sended_dir = '';
-let drone_name = process.argv[3];
-let host = process.argv[2];
-
+let drone_info = JSON.parse(process.env.drone_info);
+let drone_name = drone_info.drone;
+let host = drone_info.host;
+console.log(drone_name, host)
 let geotagging_dir = 'Geotagged';
 
 let lib = {};
@@ -329,17 +330,17 @@ const move_image = ((from, to, image) => {
     });
 });
 
-const checkUSB = new Promise((resolve, reject) => {
-    // 외장 메모리 존재 여부 확인
-    fs.readdirSync(external_memory, {withFileTypes: true}).forEach(p => {
-        let dir = p.name;
-        if (p.isDirectory()) {
-            external_memory += dir;
-            console.log('외장 메모리 경로 : ' + external_memory);
-        }
-    });
-    resolve('finish');
-});
+// const checkUSB = new Promise((resolve, reject) => {
+//     // 외장 메모리 존재 여부 확인
+//     fs.readdirSync(external_memory, {withFileTypes: true}).forEach(p => {
+//         let dir = p.name;
+//         if (p.isDirectory()) {
+//             external_memory += dir;
+//             console.log('외장 메모리 경로 : ' + external_memory);
+//         }
+//     });
+//     resolve('finish');
+// });
 
 function copy2USB(source, destination) {
     try {

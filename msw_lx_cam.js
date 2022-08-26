@@ -19,7 +19,7 @@ config.name = 'msw_lx_cam';
 global.drone_info = '';
 
 try {
-    drone_info = JSON.parse(fs.readFileSync('../drone_info.json', 'utf8'));
+    drone_info = JSON.parse(fs.readFileSync('./drone_info.json', 'utf8'));
 
     config.directory_name = config.name + '_' + config.name;
     config.gcs = drone_info.gcs;
@@ -42,7 +42,7 @@ try {
         name: 'lib_lx_cam',
         target: 'armv7l',
         description: '[name] [server]',
-        scripts: "sh lib_lx_cam.sh",
+        scripts: "./lib_lx_cam.js",
         data: ["Capture_Status", "Geotag_Status", "Send_Status", "Captured_GPS", "Geotagged_GPS"],
         control: ['Capture']
     };
@@ -113,29 +113,24 @@ function init() {
 
 function runLib(obj_lib) {
     try {
-        let scripts_arr = obj_lib.scripts.split(' ');
-        if (config.directory_name === '') {
-
-        } else {
-            scripts_arr[0] = scripts_arr[0].replace('./', '');
-        }
-        let run_lib = spawn(scripts_arr[0], [scripts_arr[1], drone_info.host, drone_info.drone]);
-
-        run_lib.stdout.on('data', function (data) {
-            console.log('stdout: ' + data);
-        });
-
-        run_lib.stderr.on('data', function (data) {
-            console.log('stderr: ' + data);
-        });
-
-        run_lib.on('exit', function (code) {
-            console.log('exit: ' + code);
-        });
-
-        run_lib.on('error', function (code) {
-            console.log('error: ' + code);
-        });
+        require(obj_lib.scripts)
+        // let run_lib = spawn(scripts_arr[0], [scripts_arr[1], drone_info.host, drone_info.drone]);
+        //
+        // run_lib.stdout.on('data', function (data) {
+        //     console.log('stdout: ' + data);
+        // });
+        //
+        // run_lib.stderr.on('data', function (data) {
+        //     console.log('stderr: ' + data);
+        // });
+        //
+        // run_lib.on('exit', function (code) {
+        //     console.log('exit: ' + code);
+        // });
+        //
+        // run_lib.on('error', function (code) {
+        //     console.log('error: ' + code);
+        // });
     } catch (e) {
         console.log(e.message);
     }
@@ -165,7 +160,7 @@ function DeleteSubscription(uri, cnt) {
         } else {
             // console.log("\n[RESPONSE]\n", response.statusCode);
             // console.log(body);
-            console.log('Delete Subscription\n  ' + options.url);
+            // console.log('Delete Subscription\n  ' + options.url);
             CreateSubscription(uri, cnt);
         }
     });
@@ -206,7 +201,7 @@ function CreateSubscription(uri, cnt) {
             console.log(error);
         } else {
             // console.log("\n[RESPONSE]\n", response.statusCode);
-            console.log('Create Subscription\n  ' + options.url);
+            // console.log('Create Subscription\n  ' + options.url);
 
             if (response.statusCode === 409) {
                 DeleteSubscription(uri, cnt);

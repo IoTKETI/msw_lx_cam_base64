@@ -117,7 +117,6 @@ function lib_mqtt_connect(broker_ip, port) {
 }
 
 function geotag_image() {
-    console.log('==============================================================')
     fs.readdir('./', (err, files) => {
         if (err) {
             console.log('[' + geotagging_dir + '] is empty directory..');
