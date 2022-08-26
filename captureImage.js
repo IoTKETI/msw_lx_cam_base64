@@ -99,7 +99,7 @@ function init() {
             }
         });
         camera_test.on('error', function (code) {
-            if (code.includes('gphoto2 ENOENT')) {
+            if (code.toString().includes('gphoto2 ENOENT')) {
                 console.log('Please install gphoto library');
                 status = 'Error';
                 let msg = status + ' - Please install gphoto library';
