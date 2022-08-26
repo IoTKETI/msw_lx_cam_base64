@@ -252,28 +252,28 @@ function msw_mqtt_connect(broker_ip, port) {
             if (msw_sub_mobius_topic.includes(topic)) {
                 setTimeout(on_receive_from_muv, parseInt(Math.random() * 5), topic, message.toString());
             } else {
-                if (topic.includes('/oneM2M/req/')) {
-                    let jsonObj = JSON.parse(message.toString());
-
-                    let patharr = jsonObj.pc['m2m:sgn'].sur.split('/');
-                    let lib_ctl_topic = '/MUV/control/' + patharr[patharr.length - 3].replace('msw_', 'lib_') + '/' + patharr[patharr.length - 2];
-
-                    if (patharr[patharr.length - 3] === config.name) {
-                        if (jsonObj.pc['m2m:sgn'].nev) {
-                            if (jsonObj.pc['m2m:sgn'].nev.rep) {
-                                if (jsonObj.pc['m2m:sgn'].nev.rep['m2m:cin']) {
-                                    let cinObj = jsonObj.pc['m2m:sgn'].nev.rep['m2m:cin']
-                                    if (getType(cinObj.con) == 'string') {
-                                        setTimeout(on_receive_from_muv, parseInt(Math.random() * 5), lib_ctl_topic, cinObj.con);
-                                    } else {
-                                        setTimeout(on_receive_from_muv, parseInt(Math.random() * 5), lib_ctl_topic, JSON.stringify(cinObj.con));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else {
-                }
+                // if (topic.includes('/oneM2M/req/')) {
+                //     let jsonObj = JSON.parse(message.toString());
+                //
+                //     let patharr = jsonObj.pc['m2m:sgn'].sur.split('/');
+                //     let lib_ctl_topic = '/MUV/control/' + patharr[patharr.length - 3].replace('msw_', 'lib_') + '/' + patharr[patharr.length - 2];
+                //
+                //     if (patharr[patharr.length - 3] === config.name) {
+                //         if (jsonObj.pc['m2m:sgn'].nev) {
+                //             if (jsonObj.pc['m2m:sgn'].nev.rep) {
+                //                 if (jsonObj.pc['m2m:sgn'].nev.rep['m2m:cin']) {
+                //                     let cinObj = jsonObj.pc['m2m:sgn'].nev.rep['m2m:cin']
+                //                     if (getType(cinObj.con) === 'string') {
+                //                         setTimeout(on_receive_from_muv, parseInt(Math.random() * 5), lib_ctl_topic, cinObj.con);
+                //                     } else {
+                //                         setTimeout(on_receive_from_muv, parseInt(Math.random() * 5), lib_ctl_topic, JSON.stringify(cinObj.con));
+                //                     }
+                //                 }
+                //             }
+                //         }
+                //     }
+                // } else {
+                // }
             }
         });
 

@@ -90,7 +90,7 @@ function init() {
         lib.name = my_lib_name;
         lib.target = 'armv7l';
         lib.description = "[name]";
-        lib.scripts = './' + my_lib_name;
+        lib.scripts = "./lib_lx_cam.js";
         lib.data = ["Capture_Status", "Geotag_Status", "Send_Status", "Captured_GPS", "Geotagged_GPS"];
         lib.control = ['Capture'];
 
@@ -200,7 +200,6 @@ let images = []
 
 function send_image() {
     try {
-        console.log('==============================================================')
         console.time('readImages')
         fs.readdir('./' + geotagging_dir + '/', (err, files) => {
             if (err) {
