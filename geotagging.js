@@ -193,14 +193,7 @@ function geotag_image() {
 
                 setTimeout(geotag_image, 100);
             } else {
-                if (tag_count > 200) {
-                    count = 0;
-                    tag_count = 0;
-                    console.timeEnd('[Geo]Finish')
-                } else {
-                    tag_count++;
                     setTimeout(geotag_image, 100);
-                }
             }
         }
     });
