@@ -17,7 +17,7 @@ let sended_dir = '';
 let drone_info = JSON.parse(process.env.drone_info);
 let drone_name = drone_info.drone;
 let host = drone_info.host;
-console.log(drone_name, host)
+
 let geotagging_dir = 'Geotagged';
 
 let lib = {};

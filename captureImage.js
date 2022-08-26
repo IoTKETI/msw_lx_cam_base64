@@ -30,9 +30,6 @@ let count = 0;
 
 let status = 'Init';
 
-let drone_name = JSON.parse(process.env.drone_info).drone;
-console.log('[captureImage]', drone_name);
-
 init();
 
 function init() {
