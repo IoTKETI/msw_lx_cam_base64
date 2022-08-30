@@ -230,7 +230,7 @@ function geotag_image() {
                         }
                     });
                 }
-                setTimeout(move_image, 1, './', './' + geotagging_dir + '/', files[0].replace('.jpg', '_' + img_count + '.jpg'));
+                setTimeout(move_image, 1, './' + files[0], './' + geotagging_dir + '/' + files[0].replace('.jpg', '_' + img_count + '.jpg'));
                 img_count++
             } else {
                 setTimeout(geotag_image, 100);
@@ -253,17 +253,17 @@ function Degree2DMS(coordinate) {
 //     return coordinate
 // }
 
-function move_image(from, to, image) {
+function move_image(from, to) {
     try {
         console.time('[Geo]move')
         // fs.renameSync(from + image, to + image);
-        fs.copyFile(from + image, to + image, (err) => {
+        fs.copyFile(from, to, (err) => {
             if (err) {
                 console.log(err);
             }
-            fs.unlink(from + image, (err) => {
+            fs.unlink(from, (err) => {
                 console.timeEnd('[Geo]move')
-                console.log(image)
+                console.log(from)
                 status = 'Geotagging';
                 count++;
                 let msg = status + ' ' + count;
@@ -287,11 +287,11 @@ function move_image(from, to, image) {
 
         // captured_arr = [];
     } catch (e) {
-        fs.stat(to + image, (err) => {
+        fs.stat(to, (err) => {
             if (err !== null && err.code === "ENOENT") {
                 console.log("[geotagging] 사진이 존재하지 않습니다.");
             }
-            console.log("[geotagging] 이미 처리 후 옮겨진 사진 (" + image + ") 입니다.");
+            console.log("[geotagging] 이미 처리 후 옮겨진 사진 (" + to + ") 입니다.");
         });
         // captured_arr = [];
     }
