@@ -221,6 +221,197 @@ function lib_mqtt_connect(broker_ip, port, control) {
 let empty_count = 0;
 let images = []
 
+function send_image() {
+    try {
+        fs.readdir('./' + geotagging_dir + '/', (err, files) => {
+            if (err) {
+                console.log(err);
+                setTimeout(send_image, 50);
+            } else {
+                if (files.length > 0) {
+                    if (files.hasOwnProperty(0)) {
+                        let nameArr0 = files[0].split('_')
+                        let index0 = nameArr0[nameArr0.length - 1].split('.')[0]
+                        if (parseInt(index0) % num_proc === 0) {
+                            if (!imgList_first.includes(files[0])) {
+                                imgList_first.push(files[0])
+                                console.log(imgList_first)
+                            }
+                        } else if (parseInt(index0) % num_proc === 1) {
+                            if (!imgList_second.includes(files[0])) {
+                                imgList_second.push(files[0])
+                                console.log(imgList_second)
+                            }
+                        } else if (parseInt(index0) % num_proc === 2) {
+                            if (!imgList_third.includes(files[0])) {
+                                imgList_third.push(files[0])
+                                console.log(imgList_third)
+                            }
+                        } else if (parseInt(index0) % num_proc === 3) {
+                            if (!imgList_fourth.includes(files[0])) {
+                                imgList_fourth.push(files[0])
+                                console.log(imgList_fourth)
+                            }
+                        } else if (parseInt(index0) % num_proc === 4) {
+                            if (!imgList_fifth.includes(files[0])) {
+                                imgList_fifth.push(files[0])
+                                console.log(imgList_fifth)
+                            }
+                        }
+                    }
+
+                    if (files.hasOwnProperty(1)) {
+                        let nameArr1 = files[1].split('_')
+                        let index1 = nameArr1[nameArr1.length - 1].split('.')[0]
+                        if (parseInt(index1) % num_proc === 0) {
+                            if (!imgList_first.includes(files[1])) {
+                                imgList_first.push(files[1])
+                                console.log(imgList_first)
+                            }
+                        } else if (parseInt(index1) % num_proc === 1) {
+                            if (!imgList_second.includes(files[1])) {
+                                imgList_second.push(files[1])
+                                console.log(imgList_second)
+                            }
+                        } else if (parseInt(index1) % num_proc === 2) {
+                            if (!imgList_third.includes(files[1])) {
+                                imgList_third.push(files[1])
+                                console.log(imgList_third)
+                            }
+                        } else if (parseInt(index1) % num_proc === 3) {
+                            if (!imgList_fourth.includes(files[1])) {
+                                imgList_fourth.push(files[1])
+                                console.log(imgList_fourth)
+                            }
+                        } else if (parseInt(index1) % num_proc === 4) {
+                            if (!imgList_fifth.includes(files[1])) {
+                                imgList_fifth.push(files[1])
+                                console.log(imgList_fifth)
+                            }
+                        }
+                    }
+
+                    if (files.hasOwnProperty(2)) {
+                        let nameArr2 = files[2].split('_')
+                        let index2 = nameArr2[nameArr2.length - 1].split('.')[0]
+                        if (parseInt(index2) % num_proc === 0) {
+                            if (!imgList_first.includes(files[2])) {
+                                imgList_first.push(files[2])
+                                console.log(imgList_first)
+                            }
+                        } else if (parseInt(index2) % num_proc === 1) {
+                            if (!imgList_second.includes(files[2])) {
+                                imgList_second.push(files[2])
+                                console.log(imgList_second)
+                            }
+                        } else if (parseInt(index2) % num_proc === 2) {
+                            if (!imgList_third.includes(files[2])) {
+                                imgList_third.push(files[2])
+                                console.log(imgList_third)
+                            }
+                        } else if (parseInt(index2) % num_proc === 3) {
+                            if (!imgList_fourth.includes(files[2])) {
+                                imgList_fourth.push(files[2])
+                                console.log(imgList_fourth)
+                            }
+                        } else if (parseInt(index2) % num_proc === 4) {
+                            if (!imgList_fifth.includes(files[2])) {
+                                imgList_fifth.push(files[2])
+                                console.log(imgList_fifth)
+                            }
+                        }
+                    }
+
+                    if (files.hasOwnProperty(3)) {
+                        let nameArr3 = files[3].split('_')
+                        let index3 = nameArr3[nameArr3.length - 1].split('.')[0]
+                        if (parseInt(index3) % num_proc === 0) {
+                            if (!imgList_first.includes(files[3])) {
+                                imgList_first.push(files[3])
+                                console.log(imgList_first)
+                            }
+                        } else if (parseInt(index3) % num_proc === 1) {
+                            if (!imgList_second.includes(files[3])) {
+                                imgList_second.push(files[3])
+                                console.log(imgList_second)
+                            }
+                        } else if (parseInt(index3) % num_proc === 2) {
+                            if (!imgList_third.includes(files[3])) {
+                                imgList_third.push(files[3])
+                                console.log(imgList_third)
+                            }
+                        } else if (parseInt(index3) % num_proc === 3) {
+                            if (!imgList_fourth.includes(files[3])) {
+                                imgList_fourth.push(files[3])
+                                console.log(imgList_fourth)
+                            }
+                        } else if (parseInt(index3) % num_proc === 4) {
+                            if (!imgList_fifth.includes(files[3])) {
+                                imgList_fifth.push(files[3])
+                                console.log(imgList_fifth)
+                            }
+                        }
+                    }
+
+                    if (files.hasOwnProperty(4)) {
+                        let nameArr4 = files[4].split('_')
+                        let index4 = nameArr4[nameArr4.length - 1].split('.')[0]
+                        if (parseInt(index4) % num_proc === 0) {
+                            if (!imgList_first.includes(files[4])) {
+                                imgList_first.push(files[4])
+                                console.log(imgList_first)
+                            }
+                        } else if (parseInt(index4) % num_proc === 1) {
+                            if (!imgList_second.includes(files[4])) {
+                                imgList_second.push(files[4])
+                                console.log(imgList_second)
+                            }
+                        } else if (parseInt(index4) % num_proc === 2) {
+                            if (!imgList_third.includes(files[4])) {
+                                imgList_third.push(files[4])
+                                console.log(imgList_third)
+                            }
+                        } else if (parseInt(index4) % num_proc === 3) {
+                            if (!imgList_fourth.includes(files[4])) {
+                                imgList_fourth.push(files[4])
+                                console.log(imgList_fourth)
+                            }
+                        } else if (parseInt(index4) % num_proc === 4) {
+                            if (!imgList_fifth.includes(files[4])) {
+                                imgList_fifth.push(files[4])
+                                console.log(imgList_fifth)
+                            }
+                        }
+                    }
+                    setTimeout(send_image, 100);
+                    return
+                } else {
+                    if (status === 'Started') {
+                        empty_count++;
+                        // console.log('Waiting - ' + empty_count);
+                        if (empty_count > 200) {
+                            console.timeEnd('Finish')
+                            status = 'Finish';
+                            empty_count = 0;
+                            let msg = status + ' ' + count;
+                            lib_mqtt_client.publish(my_status_topic, msg);
+                        } else {
+                            setTimeout(send_image, 50);
+                            return
+                        }
+                    } else {
+                        setTimeout(send_image, 100);
+                        return
+                    }
+                }
+            }
+        });
+    } catch (e) {
+        setTimeout(send_image, 100);
+        return
+    }
+}
+
 function SendBase64_0() {
     if (imgList_first.length > 0) {
         try {
