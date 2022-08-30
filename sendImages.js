@@ -375,6 +375,8 @@ function send_image() {
                             }
                         }
                     }
+                    setTimeout(send_image, 100);
+                    return
                 } else {
                     if (status === 'Started') {
                         empty_count++;
