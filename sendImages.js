@@ -166,6 +166,9 @@ function lib_mqtt_connect(broker_ip, port, control) {
                         !fs.existsSync(sended_dir) && fs.mkdirSync(sended_dir);
                         console.log('[send_lib_mqtt] Create ( ' + sended_dir + ' ) directory');
 
+                        status = 'Start';
+                        let msg = status + ' ' + sended_dir;
+                        lib_mqtt_client.publish(my_status_topic, msg);
                         // axios.post("http://" + host + ":4500/lists/",
                         //     {
                         //         listid: sended_dir,
