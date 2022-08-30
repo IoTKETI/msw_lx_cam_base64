@@ -423,50 +423,53 @@ function SendBase64_0() {
                 header
             ).then(function (response) {
                 console.timeEnd('OnlySend0')
-                images.push(imgList_first[0])
-                axios.put("http://" + host + ":4500/lists/listid/" + sended_dir,
-                    {content: images}
-                ).then(function (response) {
-                    move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_first[0])
-                        .then((result) => {
-                            if (result === 'finish') {
-                                count++;
+                move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_first[0])
+                    .then((result) => {
+                        if (result === 'finish') {
+                            count++;
 
-                                empty_count = 0;
-                                let msg = status + ' ' + count + ' ' + imgList_first[0];
-                                lib_mqtt_client.publish(my_status_topic, msg);
-                                console.timeEnd("Cycle0");
-                                imgList_first.shift()
-                                setTimeout(SendBase64_0, 100);
-                                return
-                            } else {
-                                console.timeEnd("Cycle0");
-                                setTimeout(SendBase64_0, 100);
-                                return
-                            }
-                        }).catch((error) => {
-                        // console.log(error);
-                        fs.stat('./' + sended_dir + '/' + imgList_first[0], (err) => {
-                            // console.log(err);
-                            if (err !== null && err.code === "ENOENT") {
-                                console.log("[sendImages]사진이 존재하지 않습니다.");
-                            }
-                            console.timeEnd('Cycle0')
-                            console.timeEnd('OnlySend0')
-                            console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + imgList_first[0] + ") 입니다.");
-                        });
-                        setTimeout(SendBase64_0, 100);
-                        return
+                            empty_count = 0;
+                            let msg = status + ' ' + count + ' ' + imgList_first[0];
+                            lib_mqtt_client.publish(my_status_topic, msg);
+                            console.timeEnd("Cycle0");
+                            imgList_first.shift()
+                            setTimeout(SendBase64_0, 100);
+                            return
+                        } else {
+                            console.timeEnd("Cycle0");
+                            setTimeout(SendBase64_0, 100);
+                            return
+                        }
+                    }).catch((error) => {
+                    // console.log(error);
+                    fs.stat('./' + sended_dir + '/' + imgList_first[0], (err) => {
+                        // console.log(err);
+                        if (err !== null && err.code === "ENOENT") {
+                            console.log("[sendImages]사진이 존재하지 않습니다.");
+                        }
+                        console.timeEnd('Cycle0')
+                        console.timeEnd('OnlySend0')
+                        console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + imgList_first[0] + ") 입니다.");
                     });
-                }).catch((error) => {
-                    console.log('[list_update]', error.message)
-                    setTimeout(SendBase64_0, 100);
-                    return
                 })
             }).catch(function (error) {
                 console.log('[image_send]', error.message)
-                setTimeout(SendBase64_0, 100);
-                return
+                if (error.response.status === 500) {
+                    axios.delete("http://" + host + ":4500/images/imageid/" + imgList_first[0])
+                        .then((res) => {
+                            // console.log(res)
+                            console.timeEnd('Cycle0')
+                            console.timeEnd('OnlySend0')
+                            setTimeout(SendBase64_0, 100);
+                            return
+                        }).catch((error) => {
+                        console.log(error.message)
+                        console.timeEnd('Cycle0')
+                        console.timeEnd('OnlySend0')
+                        setTimeout(SendBase64_0, 100);
+                        return
+                    })
+                }
             });
         } catch (e) {
             imgList_first.shift()
@@ -496,51 +499,53 @@ function SendBase64_1() {
                 header
             ).then(function (response) {
                 console.timeEnd('OnlySend1')
-                images.push(imgList_second[0])
-                axios.put("http://" + host + ":4500/lists/listid/" + sended_dir,
-                    {content: images}
-                ).then(function (response) {
-                    move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_second[0])
-                        .then((result) => {
-                            if (result === 'finish') {
-                                count++;
+                move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_second[0])
+                    .then((result) => {
+                        if (result === 'finish') {
+                            count++;
 
-                                empty_count = 0;
-                                let msg = status + ' ' + count + ' ' + imgList_second[0];
-                                lib_mqtt_client.publish(my_status_topic, msg);
-                                console.timeEnd("Cycle1");
-                                imgList_second.shift()
-
-                                setTimeout(SendBase64_1, 100);
-                                return
-                            } else {
-                                console.timeEnd("Cycle1");
-                                setTimeout(SendBase64_1, 100);
-                                return
-                            }
-                        }).catch((error) => {
-                        // console.log(error);
-                        fs.stat('./' + sended_dir + '/' + imgList_second[0], (err) => {
-                            // console.log(err);
-                            if (err !== null && err.code === "ENOENT") {
-                                console.log("[sendImages]사진이 존재하지 않습니다.");
-                            }
-                            console.timeEnd('Cycle1')
-                            console.timeEnd('OnlySend1')
-                            console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + imgList_second[0] + ") 입니다.");
-                        });
-                        setTimeout(SendBase64_1, 100);
-                        return
+                            empty_count = 0;
+                            let msg = status + ' ' + count + ' ' + imgList_second[0];
+                            lib_mqtt_client.publish(my_status_topic, msg);
+                            console.timeEnd("Cycle1");
+                            imgList_second.shift()
+                            setTimeout(SendBase64_1, 100);
+                            return
+                        } else {
+                            console.timeEnd("Cycle1");
+                            setTimeout(SendBase64_1, 100);
+                            return
+                        }
+                    }).catch((error) => {
+                    // console.log(error);
+                    fs.stat('./' + sended_dir + '/' + imgList_second[0], (err) => {
+                        // console.log(err);
+                        if (err !== null && err.code === "ENOENT") {
+                            console.log("[sendImages]사진이 존재하지 않습니다.");
+                        }
+                        console.timeEnd('Cycle1')
+                        console.timeEnd('OnlySend1')
+                        console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + imgList_second[0] + ") 입니다.");
                     });
-                }).catch((error) => {
-                    console.log('[list_update]', error.message)
-                    setTimeout(SendBase64_1, 100);
-                    return
                 })
             }).catch(function (error) {
                 console.log('[image_send]', error.message)
-                setTimeout(SendBase64_1, 100);
-                return
+                if (error.response.status === 500) {
+                    axios.delete("http://" + host + ":4500/images/imageid/" + imgList_second[0])
+                        .then((res) => {
+                            // console.log(res)
+                            console.timeEnd('Cycle1')
+                            console.timeEnd('OnlySend1')
+                            setTimeout(SendBase64_1, 100);
+                            return
+                        }).catch((error) => {
+                        console.log(error.message)
+                        console.timeEnd('Cycle1')
+                        console.timeEnd('OnlySend1')
+                        setTimeout(SendBase64_1, 100);
+                        return
+                    })
+                }
             });
         } catch (e) {
             imgList_second.shift()
@@ -570,50 +575,53 @@ function SendBase64_2() {
                 header
             ).then(function (response) {
                 console.timeEnd('OnlySend2')
-                images.push(imgList_third[0])
-                axios.put("http://" + host + ":4500/lists/listid/" + sended_dir,
-                    {content: images}
-                ).then(function (response) {
-                    move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_third[0])
-                        .then((result) => {
-                            if (result === 'finish') {
-                                count++;
+                move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_third[0])
+                    .then((result) => {
+                        if (result === 'finish') {
+                            count++;
 
-                                empty_count = 0;
-                                let msg = status + ' ' + count + ' ' + imgList_third[0];
-                                lib_mqtt_client.publish(my_status_topic, msg);
-                                console.timeEnd("Cycle2");
-                                imgList_third.shift()
-                                setTimeout(SendBase64_2, 100);
-                                return
-                            } else {
-                                console.timeEnd("Cycle2");
-                                setTimeout(SendBase64_2, 100);
-                                return
-                            }
-                        }).catch((error) => {
-                        // console.log(error);
-                        fs.stat('./' + sended_dir + '/' + imgList_third[0], (err) => {
-                            // console.log(err);
-                            if (err !== null && err.code === "ENOENT") {
-                                console.log("[sendImages]사진이 존재하지 않습니다.");
-                            }
-                            console.timeEnd('Cycle2')
-                            console.timeEnd('OnlySend2')
-                            console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + imgList_third[0] + ") 입니다.");
-                        });
-                        setTimeout(SendBase64_2, 100);
-                        return
+                            empty_count = 0;
+                            let msg = status + ' ' + count + ' ' + imgList_third[0];
+                            lib_mqtt_client.publish(my_status_topic, msg);
+                            console.timeEnd("Cycle2");
+                            imgList_third.shift()
+                            setTimeout(SendBase64_2, 100);
+                            return
+                        } else {
+                            console.timeEnd("Cycle2");
+                            setTimeout(SendBase64_2, 100);
+                            return
+                        }
+                    }).catch((error) => {
+                    // console.log(error);
+                    fs.stat('./' + sended_dir + '/' + imgList_third[0], (err) => {
+                        // console.log(err);
+                        if (err !== null && err.code === "ENOENT") {
+                            console.log("[sendImages]사진이 존재하지 않습니다.");
+                        }
+                        console.timeEnd('Cycle2')
+                        console.timeEnd('OnlySend2')
+                        console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + imgList_third[0] + ") 입니다.");
                     });
-                }).catch((error) => {
-                    console.log('[list_update]', error.message)
-                    setTimeout(SendBase64_2, 100);
-                    return
                 })
             }).catch(function (error) {
                 console.log('[image_send]', error.message)
-                setTimeout(SendBase64_2, 100);
-                return
+                if (error.response.status === 500) {
+                    axios.delete("http://" + host + ":4500/images/imageid/" + imgList_third[0])
+                        .then((res) => {
+                            // console.log(res)
+                            console.timeEnd('Cycle2')
+                            console.timeEnd('OnlySend2')
+                            setTimeout(SendBase64_2, 100);
+                            return
+                        }).catch((error) => {
+                        console.log(error.message)
+                        console.timeEnd('Cycle2')
+                        console.timeEnd('OnlySend2')
+                        setTimeout(SendBase64_2, 100);
+                        return
+                    })
+                }
             });
         } catch (e) {
             imgList_third.shift()
@@ -643,50 +651,53 @@ function SendBase64_3() {
                 header
             ).then(function (response) {
                 console.timeEnd('OnlySend3')
-                images.push(imgList_forth[0])
-                axios.put("http://" + host + ":4500/lists/listid/" + sended_dir,
-                    {content: images}
-                ).then(function (response) {
-                    move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_forth[0])
-                        .then((result) => {
-                            if (result === 'finish') {
-                                count++;
+                move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_forth[0])
+                    .then((result) => {
+                        if (result === 'finish') {
+                            count++;
 
-                                empty_count = 0;
-                                let msg = status + ' ' + count + ' ' + imgList_forth[0];
-                                lib_mqtt_client.publish(my_status_topic, msg);
-                                console.timeEnd("Cycle3");
-                                imgList_forth.shift()
-                                setTimeout(SendBase64_3, 100);
-                                return
-                            } else {
-                                console.timeEnd("Cycle3");
-                                setTimeout(SendBase64_3, 100);
-                                return
-                            }
-                        }).catch((error) => {
-                        // console.log(error);
-                        fs.stat('./' + sended_dir + '/' + imgList_forth[0], (err) => {
-                            // console.log(err);
-                            if (err !== null && err.code === "ENOENT") {
-                                console.log("[sendImages]사진이 존재하지 않습니다.");
-                            }
-                            console.timeEnd('Cycle3')
-                            console.timeEnd('OnlySend3')
-                            console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + imgList_forth[0] + ") 입니다.");
-                        });
-                        setTimeout(SendBase64_3, 100);
-                        return
+                            empty_count = 0;
+                            let msg = status + ' ' + count + ' ' + imgList_forth[0];
+                            lib_mqtt_client.publish(my_status_topic, msg);
+                            console.timeEnd("Cycle3");
+                            imgList_forth.shift()
+                            setTimeout(SendBase64_3, 100);
+                            return
+                        } else {
+                            console.timeEnd("Cycle3");
+                            setTimeout(SendBase64_3, 100);
+                            return
+                        }
+                    }).catch((error) => {
+                    // console.log(error);
+                    fs.stat('./' + sended_dir + '/' + imgList_forth[0], (err) => {
+                        // console.log(err);
+                        if (err !== null && err.code === "ENOENT") {
+                            console.log("[sendImages]사진이 존재하지 않습니다.");
+                        }
+                        console.timeEnd('Cycle3')
+                        console.timeEnd('OnlySend3')
+                        console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + imgList_forth[0] + ") 입니다.");
                     });
-                }).catch((error) => {
-                    console.log('[list_update]', error.message)
-                    setTimeout(SendBase64_3, 100);
-                    return
                 })
             }).catch(function (error) {
                 console.log('[image_send]', error.message)
-                setTimeout(SendBase64_3, 100);
-                return
+                if (error.response.status === 500) {
+                    axios.delete("http://" + host + ":4500/images/imageid/" + imgList_forth[0])
+                        .then((res) => {
+                            // console.log(res)
+                            console.timeEnd('Cycle3')
+                            console.timeEnd('OnlySend3')
+                            setTimeout(SendBase64_3, 100);
+                            return
+                        }).catch((error) => {
+                        console.log(error.message)
+                        console.timeEnd('Cycle3')
+                        console.timeEnd('OnlySend3')
+                        setTimeout(SendBase64_3, 100);
+                        return
+                    })
+                }
             });
         } catch (e) {
             imgList_forth.shift()
@@ -716,50 +727,53 @@ function SendBase64_4() {
                 header
             ).then(function (response) {
                 console.timeEnd('OnlySend4')
-                images.push(imgList_fifth[0])
-                axios.put("http://" + host + ":4500/lists/listid/" + sended_dir,
-                    {content: images}
-                ).then(function (response) {
-                    move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_fifth[0])
-                        .then((result) => {
-                            if (result === 'finish') {
-                                count++;
+                move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_fifth[0])
+                    .then((result) => {
+                        if (result === 'finish') {
+                            count++;
 
-                                empty_count = 0;
-                                let msg = status + ' ' + count + ' ' + imgList_fifth[0];
-                                lib_mqtt_client.publish(my_status_topic, msg);
-                                console.timeEnd("Cycle4");
-                                imgList_fifth.shift()
-                                setTimeout(SendBase64_4, 100);
-                                return
-                            } else {
-                                console.timeEnd("Cycle4");
-                                setTimeout(SendBase64_4, 100);
-                                return
-                            }
-                        }).catch((error) => {
-                        // console.log(error);
-                        fs.stat('./' + sended_dir + '/' + imgList_fifth[0], (err) => {
-                            // console.log(err);
-                            if (err !== null && err.code === "ENOENT") {
-                                console.log("[sendImages]사진이 존재하지 않습니다.");
-                            }
-                            console.timeEnd('Cycle4')
-                            console.timeEnd('OnlySend4')
-                            console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + imgList_fifth[0] + ") 입니다.");
-                        });
-                        setTimeout(SendBase64_4, 100);
-                        return
+                            empty_count = 0;
+                            let msg = status + ' ' + count + ' ' + imgList_fifth[0];
+                            lib_mqtt_client.publish(my_status_topic, msg);
+                            console.timeEnd("Cycle4");
+                            imgList_fifth.shift()
+                            setTimeout(SendBase64_4, 100);
+                            return
+                        } else {
+                            console.timeEnd("Cycle4");
+                            setTimeout(SendBase64_4, 100);
+                            return
+                        }
+                    }).catch((error) => {
+                    // console.log(error);
+                    fs.stat('./' + sended_dir + '/' + imgList_fifth[0], (err) => {
+                        // console.log(err);
+                        if (err !== null && err.code === "ENOENT") {
+                            console.log("[sendImages]사진이 존재하지 않습니다.");
+                        }
+                        console.timeEnd('Cycle4')
+                        console.timeEnd('OnlySend4')
+                        console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + imgList_fifth[0] + ") 입니다.");
                     });
-                }).catch((error) => {
-                    console.log('[list_update]', error.message)
-                    setTimeout(SendBase64_4, 100);
-                    return
                 })
             }).catch(function (error) {
                 console.log('[image_send]', error.message)
-                setTimeout(SendBase64_4, 100);
-                return
+                if (error.response.status === 500) {
+                    axios.delete("http://" + host + ":4500/images/imageid/" + imgList_fifth[0])
+                        .then((res) => {
+                            // console.log(res)
+                            console.timeEnd('Cycle4')
+                            console.timeEnd('OnlySend4')
+                            setTimeout(SendBase64_4, 100);
+                            return
+                        }).catch((error) => {
+                        console.log(error.message)
+                        console.timeEnd('Cycle4')
+                        console.timeEnd('OnlySend4')
+                        setTimeout(SendBase64_4, 100);
+                        return
+                    })
+                }
             });
         } catch (e) {
             imgList_fifth.shift()
