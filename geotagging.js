@@ -162,7 +162,7 @@ function lib_mqtt_connect(broker_ip, port) {
 }
 
 let gps;
-let count = 0;
+let img_count = 0;
 
 function geotag_image() {
     fs.readdir('./', (err, files) => {
@@ -230,8 +230,8 @@ function geotag_image() {
                         }
                     });
                 }
-                setTimeout(move_image, 1, './', './' + geotagging_dir + '/', files[0].replace('.jpg', '_' + count + '.jpg'));
-                count++
+                setTimeout(move_image, 1, './', './' + geotagging_dir + '/', files[0].replace('.jpg', '_' + img_count + '.jpg'));
+                img_count++
             } else {
                 setTimeout(geotag_image, 100);
             }
