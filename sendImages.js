@@ -102,6 +102,12 @@ function init() {
     control_topic = '/MUV/control/' + lib["name"] + '/' + lib["control"][0];
 
     lib_mqtt_connect('localhost', 1883, control_topic);
+
+    SendBase64_0();
+    SendBase64_1();
+    SendBase64_2();
+    SendBase64_3();
+    SendBase64_4();
 }
 
 function lib_mqtt_connect(broker_ip, port, control) {
@@ -200,6 +206,12 @@ function lib_mqtt_connect(broker_ip, port, control) {
 
 let empty_count = 0;
 let images = []
+
+let imgList_first = [];
+let imgList_second = [];
+let imgList_third = [];
+let imgList_forth = [];
+let imgList_fifth = [];
 
 function send_image() {
     try {
