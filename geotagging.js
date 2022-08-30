@@ -162,11 +162,12 @@ function lib_mqtt_connect(broker_ip, port) {
 }
 
 let gps;
+let count = 0;
 
 function geotag_image() {
     fs.readdir('./', (err, files) => {
         if (err) {
-            console.log('[' + geotagging_dir + '] is empty directory..');
+            console.log('[Captured Directory] is empty directory..');
 
             setTimeout(geotag_image, 100);
         } else {
@@ -229,8 +230,8 @@ function geotag_image() {
                         }
                     });
                 }
-                setTimeout(move_image, 1, './', './' + geotagging_dir + '/', files[0]);
-
+                setTimeout(move_image, 1, './', './' + geotagging_dir + '/', files[0].replace('.jpg', '_' + count + '.jpg'));
+                count++
             } else {
                 setTimeout(geotag_image, 100);
             }

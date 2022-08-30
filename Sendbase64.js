@@ -1,7 +1,3 @@
-/**
- * Created by Wonseok Jung in KETI on 2022-02-08.
- */
-
 const fs = require('fs');
 const fsextra = require('fs-extra');
 const moment = require("moment");
@@ -13,12 +9,11 @@ const {spawn} = require('child_process');
 const my_lib_name = 'lib_lx_cam';
 
 let mission = '';
-let sended_dir = '';
-let drone_info = JSON.parse(process.env.drone_info);
-let drone_name = drone_info.drone;
-let host = drone_info.host;
+let sended_dir = 'SendTest';
+let drone_name = 'drone1';
+let host = 'gcs.iotocean.org';
 
-let geotagging_dir = 'Geotagged';
+let geotagging_dir = 'Test';
 
 let lib = {};
 
@@ -26,180 +21,19 @@ let lib_mqtt_client = null;
 let my_status_topic = '';
 let control_topic = '';
 
-let status = 'Init';
+let status = 'Start';
 let count = 0;
 let external_memory = '/media/pi/';
 let copyable = false;
 
-init();
-
-function init() {
-    let check_memory = spawn('df', ['-h']);
-
-    check_memory.stdout.on('data', (data) => {
-        // console.log('stdout: ' + data);
-        data.toString().split('\n').forEach((list) => {
-            if (list.includes('/dev/root')) {
-                list.split(' ').forEach((d) => {
-                    if (d.includes('%')) {
-                        console.log('Free memory is ' + d);
-                        if ((100 - parseInt(d.substring(0, d.length - 1))) <= 20) {
-                            if (directorys.length > 0) {
-                                console.log('./' + directorys[0]);
-                                fs.rmdir('./' + directorys[0], {recursive: true}, (err) => {
-                                    if (err) {
-                                        console.log(err);
-                                    } else {
-                                        console.log('./' + directorys[0] + " Deleted!");
-                                    }
-                                });
-                            }
-                        }
-                    }
-                });
-            }
-        })
-    });
-
-    check_memory.stderr.on('data', (data) => {
-        console.log('stderr: ' + data);
-    });
-    check_memory.on('exit', (code) => {
-        console.log('exit: ' + code);
-    });
-    check_memory.on('error', function (code) {
-        console.log('error: ' + code);
-    });
-
-    let directorys = [];
-    fs.readdirSync('./', {withFileTypes: true}).forEach(p => {
-        let dir = p.name;
-        if (p.name.includes('Send-')) {
-            if (p.isDirectory()) {
-                directorys.push(dir);
-            }
-        }
-    });
-    sended_dir = directorys[directorys.length - 1];
-    console.log('보드에서 마지막 사진 폴더 이름 : ' + sended_dir);
-
-    try {
-        lib = {};
-        lib = JSON.parse(fs.readFileSync('./' + my_lib_name + '.json', 'utf8'));
-    } catch (e) {
-        lib = {};
-        lib.name = my_lib_name;
-        lib.target = 'armv7l';
-        lib.description = "[name]";
-        lib.scripts = "./lib_lx_cam.js";
-        lib.data = ["Capture_Status", "Geotag_Status", "Send_Status", "Captured_GPS", "Geotagged_GPS"];
-        lib.control = ['Capture'];
-
-        fs.writeFileSync('./' + my_lib_name + '.json', JSON.stringify(lib, null, 4), 'utf8');
-    }
-
-    my_status_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][2];
-    control_topic = '/MUV/control/' + lib["name"] + '/' + lib["control"][0];
-
-    lib_mqtt_connect('localhost', 1883, control_topic);
-}
-
-function lib_mqtt_connect(broker_ip, port, control) {
-    if (lib_mqtt_client == null) {
-        let connectOptions = {
-            host: broker_ip,
-            port: port,
-            protocol: "mqtt",
-            keepalive: 10,
-            protocolId: "MQTT",
-            protocolVersion: 4,
-            clientId: 'lib_mqtt_client_mqttjs_' + my_lib_name + '_' + 'send_' + nanoid(15),
-            clean: true,
-            reconnectPeriod: 2000,
-            connectTimeout: 2000,
-            rejectUnauthorized: false
-        };
-
-        lib_mqtt_client = mqtt.connect(connectOptions);
-
-        lib_mqtt_client.on('connect', function () {
-            console.log('[send_lib_mqtt_connect] connected to ' + broker_ip);
-
-            if (control !== '') {
-                lib_mqtt_client.subscribe(control, function () {
-                    console.log('[send_lib_mqtt] lib_sub_control_topic: ' + control);
-                });
-            }
-            lib_mqtt_client.publish(my_status_topic, status);
-        });
-
-        lib_mqtt_client.on('message', function (topic, message) {
-            if (topic === control) {
-                if (message.toString().includes('g')) {
-                    if (status === 'Init' || status === 'Finish') {
-                        console.log(message.toString());
-                        let command_arr = message.toString().split(' ');
-                        mission = command_arr[2];
-
-                        sended_dir = 'Send-' + moment().format('YYYY-MM-DDTHH') + '-' + mission + '-' + drone_name;
-
-                        !fs.existsSync(sended_dir) && fs.mkdirSync(sended_dir);
-                        console.log('[send_lib_mqtt] Create ( ' + sended_dir + ' ) directory');
-
-                        axios.post("http://" + host + ":4500/lists/",
-                            {
-                                listid: sended_dir,
-                                content: []
-                            }
-                        ).then((response) => {
-                            status = 'Start';
-                            let msg = status + ' ' + sended_dir;
-                            lib_mqtt_client.publish(my_status_topic, msg);
-                        }).catch((error) => {
-                            console.log('[list init]', error.message)
-                            if (error.message.includes('500')) {
-                                axios.get("http://" + host + ":4500/lists/listid/" + sended_dir)
-                                    .then((response) => {
-                                        console.log(response.data.content)
-                                        images = response.data.content
-                                        status = 'Start';
-                                        let msg = status + ' ' + sended_dir;
-                                        lib_mqtt_client.publish(my_status_topic, msg);
-                                    }).catch((error) => {
-                                    console.log('[list init]', error.message)
-                                })
-                            }
-                        })
-                        count = 0;
-                    }
-                } else if (message.toString() === 'copy') {
-                    checkUSB.then((result) => {
-                        if (result === 'finish') {
-                            if (copyable) {
-                                status = 'Copy';
-                                lib_mqtt_client.publish(my_status_topic, status);
-                                copy2USB(sended_dir, external_memory + '/' + sended_dir);
-                            }
-                        } else {
-                            status = 'Finish';
-                            let msg = status + ' Not found external memory';
-                            lib_mqtt_client.publish(my_status_topic, msg);
-                        }
-                    });
-                }
-            } else {
-                console.log('From ' + topic + 'message is ' + message.toString());
-            }
-        });
-
-        lib_mqtt_client.on('error', function (err) {
-            console.log(err.message);
-        });
-    }
-}
-
 let empty_count = 0;
 let images = []
+
+let imgList_first = [];
+let imgList_second = [];
+let imgList_third = [];
+let imgList_forth = [];
+let imgList_fifth = [];
 
 function send_image() {
     try {
@@ -382,6 +216,7 @@ function send_image() {
                         return
                     }
                 }
+                setTimeout(send_image, 50);
             }
         });
     } catch (e) {
@@ -403,23 +238,23 @@ function SendBase64_0() {
             };
             axios.post("http://" + host + ":4500/images",
                 {
-                    imageid: imgList_first[0],
+                    imageid: imgList_first[0].slice(0, 19) + '.jpg',
                     content: "data:image/jpg;base64," + encode,
                 },
                 header
             ).then(function (response) {
                 console.timeEnd('OnlySend0')
-                images.push(imgList_first[0])
+                images.push(imgList_first[0].slice(0, 19) + '.jpg')
                 axios.put("http://" + host + ":4500/lists/listid/" + sended_dir,
                     {content: images}
                 ).then(function (response) {
-                    move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_first[0])
+                    move_image('./' + geotagging_dir + '/' + imgList_first[0], './' + sended_dir + '/' + imgList_first[0].slice(0, 19) + '.jpg')
                         .then((result) => {
                             if (result === 'finish') {
                                 count++;
 
                                 empty_count = 0;
-                                let msg = status + ' ' + count + ' ' + imgList_first[0];
+                                let msg = status + ' ' + count + ' ' + imgList_first[0].slice(0, 19) + '.jpg';
                                 lib_mqtt_client.publish(my_status_topic, msg);
                                 console.timeEnd("Cycle0");
                                 imgList_first.shift()
@@ -476,23 +311,23 @@ function SendBase64_1() {
             };
             axios.post("http://" + host + ":4500/images",
                 {
-                    imageid: imgList_second[0],
+                    imageid: imgList_second[0].slice(0, 19) + '.jpg',
                     content: "data:image/jpg;base64," + encode,
                 },
                 header
             ).then(function (response) {
                 console.timeEnd('OnlySend1')
-                images.push(imgList_second[0])
+                images.push(imgList_second[0].slice(0, 19) + '.jpg')
                 axios.put("http://" + host + ":4500/lists/listid/" + sended_dir,
                     {content: images}
                 ).then(function (response) {
-                    move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_second[0])
+                    move_image('./' + geotagging_dir + '/' + imgList_second, './' + sended_dir + '/' + imgList_second[0].slice(0, 19) + '.jpg')
                         .then((result) => {
                             if (result === 'finish') {
                                 count++;
 
                                 empty_count = 0;
-                                let msg = status + ' ' + count + ' ' + imgList_second[0];
+                                let msg = status + ' ' + count + ' ' + imgList_second[0].slice(0, 19) + '.jpg';
                                 lib_mqtt_client.publish(my_status_topic, msg);
                                 console.timeEnd("Cycle1");
                                 imgList_second.shift()
@@ -550,23 +385,23 @@ function SendBase64_2() {
             };
             axios.post("http://" + host + ":4500/images",
                 {
-                    imageid: imgList_third[0],
+                    imageid: imgList_third[0].slice(0, 19) + '.jpg',
                     content: "data:image/jpg;base64," + encode,
                 },
                 header
             ).then(function (response) {
                 console.timeEnd('OnlySend2')
-                images.push(imgList_third[0])
+                images.push(imgList_third[0].slice(0, 19) + '.jpg')
                 axios.put("http://" + host + ":4500/lists/listid/" + sended_dir,
                     {content: images}
                 ).then(function (response) {
-                    move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_third[0])
+                    move_image('./' + geotagging_dir + '/' + imgList_third[0], './' + sended_dir + '/' + imgList_third[0].slice(0, 19) + '.jpg')
                         .then((result) => {
                             if (result === 'finish') {
                                 count++;
 
                                 empty_count = 0;
-                                let msg = status + ' ' + count + ' ' + imgList_third[0];
+                                let msg = status + ' ' + count + ' ' + imgList_third[0].slice(0, 19) + '.jpg';
                                 lib_mqtt_client.publish(my_status_topic, msg);
                                 console.timeEnd("Cycle2");
                                 imgList_third.shift()
@@ -623,23 +458,23 @@ function SendBase64_3() {
             };
             axios.post("http://" + host + ":4500/images",
                 {
-                    imageid: imgList_forth[0],
+                    imageid: imgList_forth[0].slice(0, 19) + '.jpg',
                     content: "data:image/jpg;base64," + encode,
                 },
                 header
             ).then(function (response) {
                 console.timeEnd('OnlySend3')
-                images.push(imgList_forth[0])
+                images.push(imgList_forth[0].slice(0, 19) + '.jpg')
                 axios.put("http://" + host + ":4500/lists/listid/" + sended_dir,
                     {content: images}
                 ).then(function (response) {
-                    move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_forth[0])
+                    move_image('./' + geotagging_dir + '/' + imgList_forth[0], './' + sended_dir + '/' + imgList_forth[0].slice(0, 19) + '.jpg')
                         .then((result) => {
                             if (result === 'finish') {
                                 count++;
 
                                 empty_count = 0;
-                                let msg = status + ' ' + count + ' ' + imgList_forth[0];
+                                let msg = status + ' ' + count + ' ' + imgList_forth[0].slice(0, 19) + '.jpg';
                                 lib_mqtt_client.publish(my_status_topic, msg);
                                 console.timeEnd("Cycle3");
                                 imgList_forth.shift()
@@ -696,23 +531,23 @@ function SendBase64_4() {
             };
             axios.post("http://" + host + ":4500/images",
                 {
-                    imageid: imgList_fifth[0],
+                    imageid: imgList_fifth[0].slice(0, 19) + '.jpg',
                     content: "data:image/jpg;base64," + encode,
                 },
                 header
             ).then(function (response) {
                 console.timeEnd('OnlySend4')
-                images.push(imgList_fifth[0])
+                images.push(imgList_fifth[0].slice(0, 19) + '.jpg')
                 axios.put("http://" + host + ":4500/lists/listid/" + sended_dir,
                     {content: images}
                 ).then(function (response) {
-                    move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_fifth[0])
+                    move_image('./' + geotagging_dir + '/' + imgList_fifth[0], './' + sended_dir + '/' + imgList_fifth[0].slice(0, 19) + '.jpg')
                         .then((result) => {
                             if (result === 'finish') {
                                 count++;
 
                                 empty_count = 0;
-                                let msg = status + ' ' + count + ' ' + imgList_fifth[0];
+                                let msg = status + ' ' + count + ' ' + imgList_fifth[0].slice(0, 19) + '.jpg';
                                 lib_mqtt_client.publish(my_status_topic, msg);
                                 console.timeEnd("Cycle4");
                                 imgList_fifth.shift()
@@ -756,6 +591,12 @@ function SendBase64_4() {
     }
 }
 
+SendBase64_0();
+SendBase64_1();
+SendBase64_2();
+SendBase64_3();
+SendBase64_4();
+
 setInterval(() => {
     // 환경이 구성 되었다. 이제부터 시작한다.
     if (status === 'Start') {
@@ -793,43 +634,3 @@ const move_image = ((from, to, image) => {
         }
     });
 });
-
-const checkUSB = new Promise((resolve, reject) => {
-    // 외장 메모리 존재 여부 확인
-    fs.readdirSync(external_memory, {withFileTypes: true}).forEach(p => {
-        let dir = p.name;
-        if (p.isDirectory()) {
-            external_memory += dir;
-            console.log('외장 메모리 경로 : ' + external_memory);
-            copyable = true;
-            return;
-        }
-    });
-    resolve('finish');
-});
-
-function copy2USB(source, destination) {
-    try {
-        if (!fs.existsSync(destination)) {
-            fs.mkdirSync(destination);
-            console.log('Create directory ---> ' + destination);
-        }
-    } catch (e) {
-        if (e.includes('permission denied')) {
-            console.log(e);
-        }
-    }
-
-    status = 'Copying';
-    lib_mqtt_client.publish(my_status_topic, status);
-    console.log('Copy from [ ' + source + ' ] to [ ' + destination + ' ]');
-
-    fsextra.copy(source, destination, function (err) {
-        if (err) {
-            console.log(err);
-        }
-        status = 'Finish';
-        lib_mqtt_client.publish(my_status_topic, status);
-        console.log('Finish copy => from [ ' + source + ' ] to [ ' + destination + ' ]');
-    });
-}
