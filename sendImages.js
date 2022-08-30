@@ -31,6 +31,12 @@ let count = 0;
 let external_memory = '/media/pi/';
 let copyable = false;
 
+let imgList_first = [];
+let imgList_second = [];
+let imgList_third = [];
+let imgList_forth = [];
+let imgList_fifth = [];
+
 init();
 
 function init() {
@@ -206,12 +212,6 @@ function lib_mqtt_connect(broker_ip, port, control) {
 
 let empty_count = 0;
 let images = []
-
-let imgList_first = [];
-let imgList_second = [];
-let imgList_third = [];
-let imgList_forth = [];
-let imgList_fifth = [];
 
 function send_image() {
     try {
