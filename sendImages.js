@@ -28,7 +28,7 @@ let control_topic = '';
 
 let status = 'Init';
 let count = 0;
-let external_memory = '/media/pi/';
+let external_memory = 'D:\\';
 let copyable = false;
 
 let imgList_first = [];
@@ -36,8 +36,13 @@ let imgList_second = [];
 let imgList_third = [];
 let imgList_fourth = [];
 let imgList_fifth = [];
+let imgList_sixth = [];
+let imgList_seventh = [];
+let imgList_eighth = [];
+let imgList_ninth = [];
+let imgList_tenth = [];
 
-const num_proc = 3;
+const num_proc = 10;
 
 init();
 
@@ -121,6 +126,17 @@ function init() {
         SendBase64_2();
         SendBase64_3();
         SendBase64_4();
+    } else if (num_proc === 10) {
+        SendBase64_0();
+        SendBase64_1();
+        SendBase64_2();
+        SendBase64_3();
+        SendBase64_4();
+        SendBase64_5();
+        SendBase64_6();
+        SendBase64_7();
+        SendBase64_8();
+        SendBase64_9();
     }
 }
 
@@ -260,6 +276,31 @@ function send_image() {
                                 imgList_fifth.push(files[0])
                                 console.log(imgList_fifth)
                             }
+                        } else if (parseInt(index0) % num_proc === 5) {
+                            if (!imgList_sixth.includes(files[0])) {
+                                imgList_sixth.push(files[0])
+                                console.log(imgList_sixth)
+                            }
+                        } else if (parseInt(index0) % num_proc === 6) {
+                            if (!imgList_seventh.includes(files[0])) {
+                                imgList_seventh.push(files[0])
+                                console.log(imgList_seventh)
+                            }
+                        } else if (parseInt(index0) % num_proc === 7) {
+                            if (!imgList_eighth.includes(files[0])) {
+                                imgList_eighth.push(files[0])
+                                console.log(imgList_eighth)
+                            }
+                        } else if (parseInt(index0) % num_proc === 8) {
+                            if (!imgList_ninth.includes(files[0])) {
+                                imgList_ninth.push(files[0])
+                                console.log(imgList_ninth)
+                            }
+                        } else if (parseInt(index0) % num_proc === 9) {
+                            if (!imgList_tenth.includes(files[0])) {
+                                imgList_tenth.push(files[0])
+                                console.log(imgList_tenth)
+                            }
                         }
                     }
 
@@ -290,6 +331,31 @@ function send_image() {
                             if (!imgList_fifth.includes(files[1])) {
                                 imgList_fifth.push(files[1])
                                 console.log(imgList_fifth)
+                            }
+                        } else if (parseInt(index1) % num_proc === 5) {
+                            if (!imgList_sixth.includes(files[1])) {
+                                imgList_sixth.push(files[1])
+                                console.log(imgList_sixth)
+                            }
+                        } else if (parseInt(index1) % num_proc === 6) {
+                            if (!imgList_seventh.includes(files[1])) {
+                                imgList_seventh.push(files[1])
+                                console.log(imgList_seventh)
+                            }
+                        } else if (parseInt(index1) % num_proc === 7) {
+                            if (!imgList_eighth.includes(files[1])) {
+                                imgList_eighth.push(files[1])
+                                console.log(imgList_eighth)
+                            }
+                        } else if (parseInt(index1) % num_proc === 8) {
+                            if (!imgList_ninth.includes(files[1])) {
+                                imgList_ninth.push(files[1])
+                                console.log(imgList_ninth)
+                            }
+                        } else if (parseInt(index1) % num_proc === 9) {
+                            if (!imgList_tenth.includes(files[1])) {
+                                imgList_tenth.push(files[1])
+                                console.log(imgList_tenth)
                             }
                         }
                     }
@@ -322,6 +388,31 @@ function send_image() {
                                 imgList_fifth.push(files[2])
                                 console.log(imgList_fifth)
                             }
+                        } else if (parseInt(index2) % num_proc === 5) {
+                            if (!imgList_sixth.includes(files[2])) {
+                                imgList_sixth.push(files[2])
+                                console.log(imgList_sixth)
+                            }
+                        } else if (parseInt(index2) % num_proc === 6) {
+                            if (!imgList_seventh.includes(files[2])) {
+                                imgList_seventh.push(files[2])
+                                console.log(imgList_seventh)
+                            }
+                        } else if (parseInt(index2) % num_proc === 7) {
+                            if (!imgList_eighth.includes(files[2])) {
+                                imgList_eighth.push(files[2])
+                                console.log(imgList_eighth)
+                            }
+                        } else if (parseInt(index2) % num_proc === 8) {
+                            if (!imgList_ninth.includes(files[2])) {
+                                imgList_ninth.push(files[2])
+                                console.log(imgList_ninth)
+                            }
+                        } else if (parseInt(index2) % num_proc === 9) {
+                            if (!imgList_tenth.includes(files[2])) {
+                                imgList_tenth.push(files[2])
+                                console.log(imgList_tenth)
+                            }
                         }
                     }
 
@@ -353,6 +444,31 @@ function send_image() {
                                 imgList_fifth.push(files[3])
                                 console.log(imgList_fifth)
                             }
+                        } else if (parseInt(index3) % num_proc === 5) {
+                            if (!imgList_sixth.includes(files[3])) {
+                                imgList_sixth.push(files[3])
+                                console.log(imgList_sixth)
+                            }
+                        } else if (parseInt(index3) % num_proc === 6) {
+                            if (!imgList_seventh.includes(files[3])) {
+                                imgList_seventh.push(files[3])
+                                console.log(imgList_seventh)
+                            }
+                        } else if (parseInt(index3) % num_proc === 7) {
+                            if (!imgList_eighth.includes(files[3])) {
+                                imgList_eighth.push(files[3])
+                                console.log(imgList_eighth)
+                            }
+                        } else if (parseInt(index3) % num_proc === 8) {
+                            if (!imgList_ninth.includes(files[3])) {
+                                imgList_ninth.push(files[3])
+                                console.log(imgList_ninth)
+                            }
+                        } else if (parseInt(index3) % num_proc === 9) {
+                            if (!imgList_tenth.includes(files[3])) {
+                                imgList_tenth.push(files[3])
+                                console.log(imgList_tenth)
+                            }
                         }
                     }
 
@@ -383,6 +499,311 @@ function send_image() {
                             if (!imgList_fifth.includes(files[4])) {
                                 imgList_fifth.push(files[4])
                                 console.log(imgList_fifth)
+                            }
+                        } else if (parseInt(index4) % num_proc === 5) {
+                            if (!imgList_sixth.includes(files[4])) {
+                                imgList_sixth.push(files[4])
+                                console.log(imgList_sixth)
+                            }
+                        } else if (parseInt(index4) % num_proc === 6) {
+                            if (!imgList_seventh.includes(files[4])) {
+                                imgList_seventh.push(files[4])
+                                console.log(imgList_seventh)
+                            }
+                        } else if (parseInt(index4) % num_proc === 7) {
+                            if (!imgList_eighth.includes(files[4])) {
+                                imgList_eighth.push(files[4])
+                                console.log(imgList_eighth)
+                            }
+                        } else if (parseInt(index4) % num_proc === 8) {
+                            if (!imgList_ninth.includes(files[4])) {
+                                imgList_ninth.push(files[4])
+                                console.log(imgList_ninth)
+                            }
+                        } else if (parseInt(index4) % num_proc === 9) {
+                            if (!imgList_tenth.includes(files[4])) {
+                                imgList_tenth.push(files[4])
+                                console.log(imgList_tenth)
+                            }
+                        }
+                    }
+
+                    if (files.hasOwnProperty(5)) {
+                        let nameArr5 = files[5].split('_')
+                        let index5 = nameArr5[nameArr5.length - 1].split('.')[0]
+                        if (parseInt(index5) % num_proc === 0) {
+                            if (!imgList_first.includes(files[5])) {
+                                imgList_first.push(files[5])
+                                console.log(imgList_first)
+                            }
+                        } else if (parseInt(index5) % num_proc === 1) {
+                            if (!imgList_second.includes(files[5])) {
+                                imgList_second.push(files[5])
+                                console.log(imgList_second)
+                            }
+                        } else if (parseInt(index5) % num_proc === 2) {
+                            if (!imgList_third.includes(files[5])) {
+                                imgList_third.push(files[5])
+                                console.log(imgList_third)
+                            }
+                        } else if (parseInt(index5) % num_proc === 3) {
+                            if (!imgList_fourth.includes(files[5])) {
+                                imgList_fourth.push(files[5])
+                                console.log(imgList_fourth)
+                            }
+                        } else if (parseInt(index5) % num_proc === 4) {
+                            if (!imgList_fifth.includes(files[5])) {
+                                imgList_fifth.push(files[5])
+                                console.log(imgList_fifth)
+                            }
+                        } else if (parseInt(index5) % num_proc === 5) {
+                            if (!imgList_sixth.includes(files[5])) {
+                                imgList_sixth.push(files[5])
+                                console.log(imgList_sixth)
+                            }
+                        } else if (parseInt(index5) % num_proc === 6) {
+                            if (!imgList_seventh.includes(files[5])) {
+                                imgList_seventh.push(files[5])
+                                console.log(imgList_seventh)
+                            }
+                        } else if (parseInt(index5) % num_proc === 7) {
+                            if (!imgList_eighth.includes(files[5])) {
+                                imgList_eighth.push(files[5])
+                                console.log(imgList_eighth)
+                            }
+                        } else if (parseInt(index5) % num_proc === 8) {
+                            if (!imgList_ninth.includes(files[5])) {
+                                imgList_ninth.push(files[5])
+                                console.log(imgList_ninth)
+                            }
+                        } else if (parseInt(index5) % num_proc === 9) {
+                            if (!imgList_tenth.includes(files[5])) {
+                                imgList_tenth.push(files[5])
+                                console.log(imgList_tenth)
+                            }
+                        }
+                    }
+
+                    if (files.hasOwnProperty(6)) {
+                        let nameArr6 = files[6].split('_')
+                        let index6 = nameArr6[nameArr6.length - 1].split('.')[0]
+                        if (parseInt(index6) % num_proc === 0) {
+                            if (!imgList_first.includes(files[6])) {
+                                imgList_first.push(files[6])
+                                console.log(imgList_first)
+                            }
+                        } else if (parseInt(index6) % num_proc === 1) {
+                            if (!imgList_second.includes(files[6])) {
+                                imgList_second.push(files[6])
+                                console.log(imgList_second)
+                            }
+                        } else if (parseInt(index6) % num_proc === 2) {
+                            if (!imgList_third.includes(files[6])) {
+                                imgList_third.push(files[6])
+                                console.log(imgList_third)
+                            }
+                        } else if (parseInt(index6) % num_proc === 3) {
+                            if (!imgList_fourth.includes(files[6])) {
+                                imgList_fourth.push(files[6])
+                                console.log(imgList_fourth)
+                            }
+                        } else if (parseInt(index6) % num_proc === 4) {
+                            if (!imgList_fifth.includes(files[6])) {
+                                imgList_fifth.push(files[6])
+                                console.log(imgList_fifth)
+                            }
+                        } else if (parseInt(index6) % num_proc === 5) {
+                            if (!imgList_sixth.includes(files[6])) {
+                                imgList_sixth.push(files[6])
+                                console.log(imgList_sixth)
+                            }
+                        } else if (parseInt(index6) % num_proc === 6) {
+                            if (!imgList_seventh.includes(files[6])) {
+                                imgList_seventh.push(files[6])
+                                console.log(imgList_seventh)
+                            }
+                        } else if (parseInt(index6) % num_proc === 7) {
+                            if (!imgList_eighth.includes(files[6])) {
+                                imgList_eighth.push(files[6])
+                                console.log(imgList_eighth)
+                            }
+                        } else if (parseInt(index6) % num_proc === 8) {
+                            if (!imgList_ninth.includes(files[6])) {
+                                imgList_ninth.push(files[6])
+                                console.log(imgList_ninth)
+                            }
+                        } else if (parseInt(index6) % num_proc === 9) {
+                            if (!imgList_tenth.includes(files[6])) {
+                                imgList_tenth.push(files[6])
+                                console.log(imgList_tenth)
+                            }
+                        }
+                    }
+
+                    if (files.hasOwnProperty(7)) {
+                        let nameArr7 = files[7].split('_')
+                        let index7 = nameArr7[nameArr7.length - 1].split('.')[0]
+                        if (parseInt(index7) % num_proc === 0) {
+                            if (!imgList_first.includes(files[7])) {
+                                imgList_first.push(files[7])
+                                console.log(imgList_first)
+                            }
+                        } else if (parseInt(index7) % num_proc === 1) {
+                            if (!imgList_second.includes(files[7])) {
+                                imgList_second.push(files[7])
+                                console.log(imgList_second)
+                            }
+                        } else if (parseInt(index7) % num_proc === 2) {
+                            if (!imgList_third.includes(files[7])) {
+                                imgList_third.push(files[7])
+                                console.log(imgList_third)
+                            }
+                        } else if (parseInt(index7) % num_proc === 3) {
+                            if (!imgList_fourth.includes(files[7])) {
+                                imgList_fourth.push(files[7])
+                                console.log(imgList_fourth)
+                            }
+                        } else if (parseInt(index7) % num_proc === 4) {
+                            if (!imgList_fifth.includes(files[7])) {
+                                imgList_fifth.push(files[7])
+                                console.log(imgList_fifth)
+                            }
+                        } else if (parseInt(index7) % num_proc === 5) {
+                            if (!imgList_sixth.includes(files[7])) {
+                                imgList_sixth.push(files[7])
+                                console.log(imgList_sixth)
+                            }
+                        } else if (parseInt(index7) % num_proc === 6) {
+                            if (!imgList_seventh.includes(files[7])) {
+                                imgList_seventh.push(files[7])
+                                console.log(imgList_seventh)
+                            }
+                        } else if (parseInt(index7) % num_proc === 7) {
+                            if (!imgList_eighth.includes(files[7])) {
+                                imgList_eighth.push(files[7])
+                                console.log(imgList_eighth)
+                            }
+                        } else if (parseInt(index7) % num_proc === 8) {
+                            if (!imgList_ninth.includes(files[7])) {
+                                imgList_ninth.push(files[7])
+                                console.log(imgList_ninth)
+                            }
+                        } else if (parseInt(index7) % num_proc === 9) {
+                            if (!imgList_tenth.includes(files[7])) {
+                                imgList_tenth.push(files[7])
+                                console.log(imgList_tenth)
+                            }
+                        }
+                    }
+
+                    if (files.hasOwnProperty(8)) {
+                        let nameArr8 = files[8].split('_')
+                        let index8 = nameArr8[nameArr8.length - 1].split('.')[0]
+                        if (parseInt(index8) % num_proc === 0) {
+                            if (!imgList_first.includes(files[8])) {
+                                imgList_first.push(files[8])
+                                console.log(imgList_first)
+                            }
+                        } else if (parseInt(index8) % num_proc === 1) {
+                            if (!imgList_second.includes(files[8])) {
+                                imgList_second.push(files[8])
+                                console.log(imgList_second)
+                            }
+                        } else if (parseInt(index8) % num_proc === 2) {
+                            if (!imgList_third.includes(files[8])) {
+                                imgList_third.push(files[8])
+                                console.log(imgList_third)
+                            }
+                        } else if (parseInt(index8) % num_proc === 3) {
+                            if (!imgList_fourth.includes(files[8])) {
+                                imgList_fourth.push(files[8])
+                                console.log(imgList_fourth)
+                            }
+                        } else if (parseInt(index8) % num_proc === 4) {
+                            if (!imgList_fifth.includes(files[8])) {
+                                imgList_fifth.push(files[8])
+                                console.log(imgList_fifth)
+                            }
+                        } else if (parseInt(index8) % num_proc === 5) {
+                            if (!imgList_sixth.includes(files[8])) {
+                                imgList_sixth.push(files[8])
+                                console.log(imgList_sixth)
+                            }
+                        } else if (parseInt(index8) % num_proc === 6) {
+                            if (!imgList_seventh.includes(files[8])) {
+                                imgList_seventh.push(files[8])
+                                console.log(imgList_seventh)
+                            }
+                        } else if (parseInt(index8) % num_proc === 7) {
+                            if (!imgList_eighth.includes(files[8])) {
+                                imgList_eighth.push(files[8])
+                                console.log(imgList_eighth)
+                            }
+                        } else if (parseInt(index8) % num_proc === 8) {
+                            if (!imgList_ninth.includes(files[8])) {
+                                imgList_ninth.push(files[8])
+                                console.log(imgList_ninth)
+                            }
+                        } else if (parseInt(index8) % num_proc === 9) {
+                            if (!imgList_tenth.includes(files[8])) {
+                                imgList_tenth.push(files[8])
+                                console.log(imgList_tenth)
+                            }
+                        }
+                    }
+
+                    if (files.hasOwnProperty(9)) {
+                        let nameArr9 = files[9].split('_')
+                        let index9 = nameArr9[nameArr9.length - 1].split('.')[0]
+                        if (parseInt(index9) % num_proc === 0) {
+                            if (!imgList_first.includes(files[9])) {
+                                imgList_first.push(files[9])
+                                console.log(imgList_first)
+                            }
+                        } else if (parseInt(index9) % num_proc === 1) {
+                            if (!imgList_second.includes(files[9])) {
+                                imgList_second.push(files[9])
+                                console.log(imgList_second)
+                            }
+                        } else if (parseInt(index9) % num_proc === 2) {
+                            if (!imgList_third.includes(files[9])) {
+                                imgList_third.push(files[9])
+                                console.log(imgList_third)
+                            }
+                        } else if (parseInt(index9) % num_proc === 3) {
+                            if (!imgList_fourth.includes(files[9])) {
+                                imgList_fourth.push(files[9])
+                                console.log(imgList_fourth)
+                            }
+                        } else if (parseInt(index9) % num_proc === 4) {
+                            if (!imgList_fifth.includes(files[9])) {
+                                imgList_fifth.push(files[9])
+                                console.log(imgList_fifth)
+                            }
+                        } else if (parseInt(index9) % num_proc === 5) {
+                            if (!imgList_sixth.includes(files[9])) {
+                                imgList_sixth.push(files[9])
+                                console.log(imgList_sixth)
+                            }
+                        } else if (parseInt(index9) % num_proc === 6) {
+                            if (!imgList_seventh.includes(files[9])) {
+                                imgList_seventh.push(files[9])
+                                console.log(imgList_seventh)
+                            }
+                        } else if (parseInt(index9) % num_proc === 7) {
+                            if (!imgList_eighth.includes(files[9])) {
+                                imgList_eighth.push(files[9])
+                                console.log(imgList_eighth)
+                            }
+                        } else if (parseInt(index9) % num_proc === 8) {
+                            if (!imgList_ninth.includes(files[9])) {
+                                imgList_ninth.push(files[9])
+                                console.log(imgList_ninth)
+                            }
+                        } else if (parseInt(index9) % num_proc === 9) {
+                            if (!imgList_tenth.includes(files[9])) {
+                                imgList_tenth.push(files[9])
+                                console.log(imgList_tenth)
                             }
                         }
                     }
@@ -793,6 +1214,387 @@ function SendBase64_4() {
         }
     } else {
         setTimeout(SendBase64_4, 100);
+    }
+}
+
+function SendBase64_5() {
+    if (imgList_sixth.length > 0) {
+        try {
+            console.time('Cycle5')
+            console.time('OnlySend5')
+            let readFile = fs.readFileSync('./' + geotagging_dir + '/' + imgList_sixth[0]); //이미지 파일 읽기
+            let encode = Buffer.from(readFile).toString('base64'); //파일 인코딩
+            let header = {
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity,
+            };
+            axios.post("http://" + host + ":4500/images",
+                {
+                    imageid: imgList_sixth[0],
+                    content: "data:image/jpg;base64," + encode,
+                },
+                header
+            ).then(function (response) {
+                console.timeEnd('OnlySend5')
+                move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_sixth[0])
+                    .then((result) => {
+                        if (result === 'finish') {
+                            count++;
+
+                            empty_count = 0;
+                            let msg = status + ' ' + count + ' ' + imgList_sixth[0];
+                            lib_mqtt_client.publish(my_status_topic, msg);
+                            console.timeEnd("Cycle5");
+                            imgList_sixth.shift()
+                            setTimeout(SendBase64_5, 100);
+                            return
+                        } else {
+                            console.timeEnd("Cycle5");
+                            setTimeout(SendBase64_5, 100);
+                            return
+                        }
+                    }).catch((error) => {
+                    console.log(error.message);
+                    fs.stat('./' + sended_dir + '/' + imgList_sixth[0], (err) => {
+                        // console.log(err);
+                        if (err !== null && err.code === "ENOENT") {
+                            console.log("[sendImages]사진이 존재하지 않습니다.");
+                        }
+                        console.timeEnd('Cycle5')
+                        console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + imgList_sixth[0] + ") 입니다.");
+                    });
+                    setTimeout(SendBase64_5, 100);
+                    return
+                })
+            }).catch(function (error) {
+                console.log('[image_send]', error.message)
+                if (error.response.status === 500) {
+                    axios.delete("http://" + host + ":4500/images/imageid/" + imgList_sixth[0])
+                        .then((res) => {
+                            // console.log(res)
+                            console.timeEnd('Cycle5')
+                            console.timeEnd('OnlySend5')
+                            setTimeout(SendBase64_5, 100);
+                            return
+                        }).catch((error) => {
+                        console.log(error.message)
+                        console.timeEnd('Cycle5')
+                        console.timeEnd('OnlySend5')
+                        setTimeout(SendBase64_5, 100);
+                        return
+                    })
+                }
+            });
+        } catch (e) {
+            imgList_sixth.shift()
+            setTimeout(SendBase64_5, 100);
+        }
+    } else {
+        setTimeout(SendBase64_5, 100);
+    }
+}
+function SendBase64_6() {
+    if (imgList_seventh.length > 0) {
+        try {
+            console.time('Cycle6')
+            console.time('OnlySend6')
+            let readFile = fs.readFileSync('./' + geotagging_dir + '/' + imgList_seventh[0]); //이미지 파일 읽기
+            let encode = Buffer.from(readFile).toString('base64'); //파일 인코딩
+            let header = {
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity,
+            };
+            axios.post("http://" + host + ":4500/images",
+                {
+                    imageid: imgList_seventh[0],
+                    content: "data:image/jpg;base64," + encode,
+                },
+                header
+            ).then(function (response) {
+                console.timeEnd('OnlySend6')
+                move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_seventh[0])
+                    .then((result) => {
+                        if (result === 'finish') {
+                            count++;
+
+                            empty_count = 0;
+                            let msg = status + ' ' + count + ' ' + imgList_seventh[0];
+                            lib_mqtt_client.publish(my_status_topic, msg);
+                            console.timeEnd("Cycle6");
+                            imgList_seventh.shift()
+                            setTimeout(SendBase64_6, 100);
+                            return
+                        } else {
+                            console.timeEnd("Cycle6");
+                            setTimeout(SendBase64_6, 100);
+                            return
+                        }
+                    }).catch((error) => {
+                    console.log(error.message);
+                    fs.stat('./' + sended_dir + '/' + imgList_seventh[0], (err) => {
+                        // console.log(err);
+                        if (err !== null && err.code === "ENOENT") {
+                            console.log("[sendImages]사진이 존재하지 않습니다.");
+                        }
+                        console.timeEnd('Cycle6')
+                        console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + imgList_seventh[0] + ") 입니다.");
+                    });
+                    setTimeout(SendBase64_6, 100);
+                    return
+                })
+            }).catch(function (error) {
+                console.log('[image_send]', error.message)
+                if (error.response.status === 500) {
+                    axios.delete("http://" + host + ":4500/images/imageid/" + imgList_seventh[0])
+                        .then((res) => {
+                            // console.log(res)
+                            console.timeEnd('Cycle6')
+                            console.timeEnd('OnlySend6')
+                            setTimeout(SendBase64_6, 100);
+                            return
+                        }).catch((error) => {
+                        console.log(error.message)
+                        console.timeEnd('Cycle6')
+                        console.timeEnd('OnlySend6')
+                        setTimeout(SendBase64_6, 100);
+                        return
+                    })
+                }
+            });
+        } catch (e) {
+            imgList_seventh.shift()
+            setTimeout(SendBase64_6, 100);
+        }
+    } else {
+        setTimeout(SendBase64_6, 100);
+    }
+}
+function SendBase64_7() {
+    if (imgList_eighth.length > 0) {
+        try {
+            console.time('Cycle7')
+            console.time('OnlySend7')
+            let readFile = fs.readFileSync('./' + geotagging_dir + '/' + imgList_eighth[0]); //이미지 파일 읽기
+            let encode = Buffer.from(readFile).toString('base64'); //파일 인코딩
+            let header = {
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity,
+            };
+            axios.post("http://" + host + ":4500/images",
+                {
+                    imageid: imgList_eighth[0],
+                    content: "data:image/jpg;base64," + encode,
+                },
+                header
+            ).then(function (response) {
+                console.timeEnd('OnlySend7')
+                move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_eighth[0])
+                    .then((result) => {
+                        if (result === 'finish') {
+                            count++;
+
+                            empty_count = 0;
+                            let msg = status + ' ' + count + ' ' + imgList_eighth[0];
+                            lib_mqtt_client.publish(my_status_topic, msg);
+                            console.timeEnd("Cycle7");
+                            imgList_eighth.shift()
+                            setTimeout(SendBase64_7, 100);
+                            return
+                        } else {
+                            console.timeEnd("Cycle7");
+                            setTimeout(SendBase64_7, 100);
+                            return
+                        }
+                    }).catch((error) => {
+                    console.log(error.message);
+                    fs.stat('./' + sended_dir + '/' + imgList_eighth[0], (err) => {
+                        // console.log(err);
+                        if (err !== null && err.code === "ENOENT") {
+                            console.log("[sendImages]사진이 존재하지 않습니다.");
+                        }
+                        console.timeEnd('Cycle7')
+                        console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + imgList_eighth[0] + ") 입니다.");
+                    });
+                    setTimeout(SendBase64_7, 100);
+                    return
+                })
+            }).catch(function (error) {
+                console.log('[image_send]', error.message)
+                if (error.response.status === 500) {
+                    axios.delete("http://" + host + ":4500/images/imageid/" + imgList_eighth[0])
+                        .then((res) => {
+                            // console.log(res)
+                            console.timeEnd('Cycle7')
+                            console.timeEnd('OnlySend7')
+                            setTimeout(SendBase64_7, 100);
+                            return
+                        }).catch((error) => {
+                        console.log(error.message)
+                        console.timeEnd('Cycle7')
+                        console.timeEnd('OnlySend7')
+                        setTimeout(SendBase64_7, 100);
+                        return
+                    })
+                }
+            });
+        } catch (e) {
+            imgList_eighth.shift()
+            setTimeout(SendBase64_7, 100);
+        }
+    } else {
+        setTimeout(SendBase64_7, 100);
+    }
+}
+function SendBase64_8() {
+    if (imgList_ninth.length > 0) {
+        try {
+            console.time('Cycle8')
+            console.time('OnlySend8')
+            let readFile = fs.readFileSync('./' + geotagging_dir + '/' + imgList_ninth[0]); //이미지 파일 읽기
+            let encode = Buffer.from(readFile).toString('base64'); //파일 인코딩
+            let header = {
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity,
+            };
+            axios.post("http://" + host + ":4500/images",
+                {
+                    imageid: imgList_ninth[0],
+                    content: "data:image/jpg;base64," + encode,
+                },
+                header
+            ).then(function (response) {
+                console.timeEnd('OnlySend8')
+                move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_ninth[0])
+                    .then((result) => {
+                        if (result === 'finish') {
+                            count++;
+
+                            empty_count = 0;
+                            let msg = status + ' ' + count + ' ' + imgList_ninth[0];
+                            lib_mqtt_client.publish(my_status_topic, msg);
+                            console.timeEnd("Cycle8");
+                            imgList_ninth.shift()
+                            setTimeout(SendBase64_8, 100);
+                            return
+                        } else {
+                            console.timeEnd("Cycle8");
+                            setTimeout(SendBase64_8, 100);
+                            return
+                        }
+                    }).catch((error) => {
+                    console.log(error.message);
+                    fs.stat('./' + sended_dir + '/' + imgList_ninth[0], (err) => {
+                        // console.log(err);
+                        if (err !== null && err.code === "ENOENT") {
+                            console.log("[sendImages]사진이 존재하지 않습니다.");
+                        }
+                        console.timeEnd('Cycle8')
+                        console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + imgList_ninth[0] + ") 입니다.");
+                    });
+                    setTimeout(SendBase64_8, 100);
+                    return
+                })
+            }).catch(function (error) {
+                console.log('[image_send]', error.message)
+                if (error.response.status === 500) {
+                    axios.delete("http://" + host + ":4500/images/imageid/" + imgList_ninth[0])
+                        .then((res) => {
+                            // console.log(res)
+                            console.timeEnd('Cycle8')
+                            console.timeEnd('OnlySend8')
+                            setTimeout(SendBase64_8, 100);
+                            return
+                        }).catch((error) => {
+                        console.log(error.message)
+                        console.timeEnd('Cycle8')
+                        console.timeEnd('OnlySend8')
+                        setTimeout(SendBase64_8, 100);
+                        return
+                    })
+                }
+            });
+        } catch (e) {
+            imgList_ninth.shift()
+            setTimeout(SendBase64_8, 100);
+        }
+    } else {
+        setTimeout(SendBase64_8, 100);
+    }
+}
+function SendBase64_9() {
+    if (imgList_tenth.length > 0) {
+        try {
+            console.time('Cycle9')
+            console.time('OnlySend9')
+            let readFile = fs.readFileSync('./' + geotagging_dir + '/' + imgList_tenth[0]); //이미지 파일 읽기
+            let encode = Buffer.from(readFile).toString('base64'); //파일 인코딩
+            let header = {
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity,
+            };
+            axios.post("http://" + host + ":4500/images",
+                {
+                    imageid: imgList_tenth[0],
+                    content: "data:image/jpg;base64," + encode,
+                },
+                header
+            ).then(function (response) {
+                console.timeEnd('OnlySend9')
+                move_image('./' + geotagging_dir + '/', './' + sended_dir + '/', imgList_tenth[0])
+                    .then((result) => {
+                        if (result === 'finish') {
+                            count++;
+
+                            empty_count = 0;
+                            let msg = status + ' ' + count + ' ' + imgList_tenth[0];
+                            lib_mqtt_client.publish(my_status_topic, msg);
+                            console.timeEnd("Cycle9");
+                            imgList_tenth.shift()
+                            setTimeout(SendBase64_9, 100);
+                            return
+                        } else {
+                            console.timeEnd("Cycle9");
+                            setTimeout(SendBase64_9, 100);
+                            return
+                        }
+                    }).catch((error) => {
+                    console.log(error.message);
+                    fs.stat('./' + sended_dir + '/' + imgList_tenth[0], (err) => {
+                        // console.log(err);
+                        if (err !== null && err.code === "ENOENT") {
+                            console.log("[sendImages]사진이 존재하지 않습니다.");
+                        }
+                        console.timeEnd('Cycle9')
+                        console.log("[sendImages]이미 처리 후 옮겨진 사진 (" + imgList_tenth[0] + ") 입니다.");
+                    });
+                    setTimeout(SendBase64_9, 100);
+                    return
+                })
+            }).catch(function (error) {
+                console.log('[image_send]', error.message)
+                if (error.response.status === 500) {
+                    axios.delete("http://" + host + ":4500/images/imageid/" + imgList_tenth[0])
+                        .then((res) => {
+                            // console.log(res)
+                            console.timeEnd('Cycle9')
+                            console.timeEnd('OnlySend9')
+                            setTimeout(SendBase64_9, 100);
+                            return
+                        }).catch((error) => {
+                        console.log(error.message)
+                        console.timeEnd('Cycle9')
+                        console.timeEnd('OnlySend9')
+                        setTimeout(SendBase64_9, 100);
+                        return
+                    })
+                }
+            });
+        } catch (e) {
+            imgList_tenth.shift()
+            setTimeout(SendBase64_9, 100);
+        }
+    } else {
+        setTimeout(SendBase64_9, 100);
     }
 }
 

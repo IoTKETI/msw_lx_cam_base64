@@ -230,7 +230,7 @@ function geotag_image() {
                         }
                     });
                 }
-                setTimeout(move_image, 1, './' + files[0], './' + geotagging_dir + '/' + files[0].replace('.jpg', '_' + img_count + '.jpg'));
+                setTimeout(move_image, 1, './' + files[0], './' + geotagging_dir + '/' + files[0].replace('.jpg', '_' + img_count.toString().padStart(2, '0') + '.jpg'));
                 img_count++
             } else {
                 setTimeout(geotag_image, 100);

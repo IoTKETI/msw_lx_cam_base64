@@ -9,6 +9,7 @@ const {nanoid} = require('nanoid');
 const util = require("util");
 const request = require('request');
 const {exec} = require("child_process");
+const concurrently = require('concurrently')
 
 global.sh_man = require('./http_man');
 
@@ -19,8 +20,8 @@ config.name = 'msw_lx_cam';
 global.drone_info = '';
 
 try {
-    drone_info = JSON.parse(fs.readFileSync('../drone_info.json', 'utf8'));
-
+    drone_info = JSON.parse(fs.readFileSync('./drone_info.json', 'utf8'));
+    console.log(JSON.stringify(drone_info))
     config.directory_name = config.name + '_' + config.name;
     config.gcs = drone_info.gcs;
     config.drone = drone_info.drone;
@@ -113,24 +114,18 @@ function init() {
 
 function runLib(obj_lib) {
     try {
-        require(obj_lib.scripts)
-        // let run_lib = spawn(scripts_arr[0], [scripts_arr[1], drone_info.host, drone_info.drone]);
-        //
-        // run_lib.stdout.on('data', function (data) {
-        //     console.log('stdout: ' + data);
-        // });
-        //
-        // run_lib.stderr.on('data', function (data) {
-        //     console.log('stderr: ' + data);
-        // });
-        //
-        // run_lib.on('exit', function (code) {
-        //     console.log('exit: ' + code);
-        // });
-        //
-        // run_lib.on('error', function (code) {
-        //     console.log('error: ' + code);
-        // });
+        const {} = concurrently(
+            [
+                {command: "node captureImage.js", name: "Capture"},
+                {command: "node geotagging.js", name: "Geotagging"},
+                {command: "node sendImages_0.js", name: "SendImages0", env: {drone_info: JSON.stringify(drone_info)}},
+                {command: "node sendImages_1.js", name: "SendImages1", env: {drone_info: JSON.stringify(drone_info)}},
+                {command: "node sendImages_2.js", name: "SendImages2", env: {drone_info: JSON.stringify(drone_info)}},
+            ],
+            {
+                restartTries: 5
+            }
+        )
     } catch (e) {
         console.log(e.message);
     }
