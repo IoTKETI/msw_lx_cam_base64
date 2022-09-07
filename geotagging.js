@@ -13,8 +13,6 @@ let gps_filename = db('./gps_filename.json');
 
 const my_lib_name = 'lib_lx_cam';
 
-let captured_arr = [];
-
 let geotagging_dir = 'Geotagged';
 
 let lib = {};
@@ -126,33 +124,11 @@ function lib_mqtt_connect(broker_ip, port) {
         lib_mqtt_client.on('connect', function () {
             console.log('[geotag_lib_mqtt_connect] connected to ' + broker_ip);
 
-            if (lib_sub_fc_topic !== '') {
-                lib_mqtt_client.subscribe(lib_sub_fc_topic, function () {
-                    console.log('[geotag_lib_mqtt] lib_sub_fc_topic: ' + lib_sub_fc_topic);
-                });
-            }
-
             lib_mqtt_client.publish(my_status_topic, status);
         });
 
         lib_mqtt_client.on('message', function (topic, message) {
-            if (lib_sub_fc_topic !== '') {
-                let _gps_data = JSON.parse(message.toString());
-                gps_data[_gps_data.image] = {
-                    "time_boot_ms": _gps_data.time_boot_ms,
-                    "lat": _gps_data.lat,
-                    "lon": _gps_data.lon,
-                    "alt": _gps_data.alt,
-                    "vx": _gps_data.vx,
-                    "vy": _gps_data.vy,
-                    "vz": _gps_data.vz,
-                    "hdg": _gps_data.hdg,
-                    "relative_alt": _gps_data.relative_alt
-                };
-                console.log(_gps_data.image, '\n', gps_data[_gps_data.image]);
-            } else {
-                console.log('From ' + topic + 'message is ' + message.toString());
-            }
+            console.log('From ' + topic + 'message is ' + message.toString());
         });
 
         lib_mqtt_client.on('error', function (err) {

@@ -391,8 +391,8 @@ function parseControlMission(topic, str_message) {
 
 function parseFcData(topic, str_message) {
     let topic_arr = topic.split('/');
-    if (topic_arr[topic_arr.length - 1] === 'global_position_int') {
-        let _topic = '/MUV/control/' + config.lib[0].name + '/' + topic_arr[topic_arr.length - 1]; // 'global_position_int'
+    if (topic_arr[topic_arr.length - 1] === 'gpi') {
+        let _topic = '/MUV/control/' + config.lib[0].name + '/' + topic_arr[topic_arr.length - 1]; // 'gpi'
         local_msw_mqtt_client.publish(_topic, str_message);
     } else {
     }
