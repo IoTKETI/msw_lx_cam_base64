@@ -221,13 +221,14 @@ function send_image() {
                     let index
                     try {
                         index = files[imageIndex].split('.')[0].substring(20, 22);
+                        console.timeEnd('FindIndex' + remainder);
                     } catch (e) {
                         console.log(e)
                         imageIndex = 0;
+                        console.timeEnd('FindIndex' + remainder);
                         setTimeout(send_image, 100);
                         return
                     }
-                    console.timeEnd('FindIndex' + remainder);
                     if (index % num_proc === remainder) {
                         console.log(files[imageIndex])
                         console.time('Cycle' + remainder);
