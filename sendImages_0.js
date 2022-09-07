@@ -14,7 +14,7 @@ const my_lib_name = 'lib_lx_cam';
 
 let mission = '';
 let sended_dir = '';
-let drone_info = JSON.parse('{"host":"gcs.iotocean.org","drone":"drone1","gcs":"KETI_MUV","type":"pixhawk","system_id":251,"update":"disable","mission":{"msw_kt_lte":{"container" :["LTE"],"sub_container":[],"git":"https://github.com/IoTKETI/msw_kt_lte.git"},"msw_lx_cam":{"container":["Capture_Status","Geotag_Status","Send_Stat us","Captured_GPS"],"sub_container":["Capture"],"git":"https://github.com/IoTKETI/msw_lx_cam.git"}},"id":"JWS"}');
+let drone_info = process.env.drone_info;
 let drone_name = drone_info.drone;
 let host = drone_info.host;
 
