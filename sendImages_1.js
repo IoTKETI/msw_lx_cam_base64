@@ -26,9 +26,9 @@ let lib_mqtt_client = null;
 let my_status_topic = '';
 let control_topic = '';
 
-let status = 'Start';
+let status = 'Init';
 let count = 0;
-let external_memory = 'D:\\';
+let external_memory = '/media/pi/';
 let copyable = false;
 
 const num_proc = 3;

@@ -17,8 +17,6 @@ let sended_dir = '';
 let drone_info = JSON.parse('{"host":"gcs.iotocean.org","drone":"drone1","gcs":"KETI_MUV","type":"pixhawk","system_id":251,"update":"disable","mission":{"msw_kt_lte":{"container" :["LTE"],"sub_container":[],"git":"https://github.com/IoTKETI/msw_kt_lte.git"},"msw_lx_cam":{"container":["Capture_Status","Geotag_Status","Send_Stat us","Captured_GPS"],"sub_container":["Capture"],"git":"https://github.com/IoTKETI/msw_lx_cam.git"}},"id":"JWS"}');
 let drone_name = drone_info.drone;
 let host = drone_info.host;
-// let drone_name = 'drone1';
-// let host = '10.252.73.230';
 
 let geotagging_dir = 'Geotagged';
 
@@ -28,9 +26,9 @@ let lib_mqtt_client = null;
 let my_status_topic = '';
 let control_topic = '';
 
-let status = 'Start';
+let status = 'Init';
 let count = 0;
-let external_memory = 'D:\\';
+let external_memory = '/media/pi/';
 let copyable = false;
 
 const num_proc = 3;
