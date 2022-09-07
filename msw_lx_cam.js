@@ -118,9 +118,7 @@ function runLib(obj_lib) {
             [
                 {command: "node captureImage.js", name: "Capture"},
                 {command: "node geotagging.js", name: "Geotagging"},
-                {command: "node sendImages_0.js", name: "SendImages0", env: {drone_info: JSON.stringify(drone_info)}},
-                {command: "node sendImages_1.js", name: "SendImages1", env: {drone_info: JSON.stringify(drone_info)}},
-                {command: "node sendImages_2.js", name: "SendImages2", env: {drone_info: JSON.stringify(drone_info)}},
+                {command: "sh runSendImages.sh", name: "runSendImages", env: {drone_info: JSON.stringify(drone_info)}}
             ],
             {
                 restartTries: 5

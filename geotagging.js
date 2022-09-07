@@ -19,7 +19,6 @@ let lib = {};
 
 let lib_mqtt_client = null;
 let my_status_topic = '';
-let lib_sub_fc_topic = '/global_position_int';
 let geotagged_position_topic = '';
 
 let status = 'Init';
@@ -29,8 +28,6 @@ let external_memory = '/media/pi/';
 let dir_name = '';
 
 let copyable = false;
-
-let gps_data = {};
 
 const checkUSB = new Promise((resolve, reject) => {
     // 외장 메모리 존재 여부 확인
