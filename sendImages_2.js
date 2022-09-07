@@ -14,7 +14,7 @@ const my_lib_name = 'lib_lx_cam';
 
 let mission = '';
 let sended_dir = '';
-let drone_info = JSON.parse(process.env.drone_info);
+let drone_info = JSON.parse('{"host":"gcs.iotocean.org","drone":"drone1","gcs":"KETI_MUV","type":"pixhawk","system_id":251,"update":"disable","mission":{"msw_kt_lte":{"container" :["LTE"],"sub_container":[],"git":"https://github.com/IoTKETI/msw_kt_lte.git"},"msw_lx_cam":{"container":["Capture_Status","Geotag_Status","Send_Stat us","Captured_GPS"],"sub_container":["Capture"],"git":"https://github.com/IoTKETI/msw_lx_cam.git"}},"id":"JWS"}');
 let drone_name = drone_info.drone;
 let host = drone_info.host;
 // let drone_name = 'drone1';
@@ -28,9 +28,9 @@ let lib_mqtt_client = null;
 let my_status_topic = '';
 let control_topic = '';
 
-let status = 'Init';
+let status = 'Start';
 let count = 0;
-let external_memory = '/media/pi/';
+let external_memory = 'D:\\';
 let copyable = false;
 
 const num_proc = 3;
@@ -218,6 +218,8 @@ function send_image() {
                 setTimeout(send_image, 50);
             } else {
                 if (files.length > 0) {
+                    console.log('=================================================')
+                    console.time('FindIndex' + remainder);
                     let index
                     try {
                         index = files[imageIndex].split('.')[0].substring(20, 22);
@@ -227,8 +229,8 @@ function send_image() {
                         setTimeout(send_image, 100);
                         return
                     }
+                    console.timeEnd('FindIndex' + remainder);
                     if (index % num_proc === remainder) {
-                        console.log('=================================================')
                         console.log(files[imageIndex])
                         console.time('Cycle' + remainder);
                         console.time('OnlySend' + remainder);
@@ -308,6 +310,7 @@ function send_image() {
                 } else {
                     if (status === 'Started') {
                         empty_count++;
+
                         // console.log('Waiting - ' + empty_count);
                         if (empty_count > 200) {
                             console.timeEnd('Finish')
