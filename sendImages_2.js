@@ -14,7 +14,8 @@ const my_lib_name = 'lib_lx_cam';
 
 let mission = '';
 let sended_dir = '';
-let drone_info = JSON.parse(process.env.drone_info);
+// let drone_info = JSON.parse(process.env.drone_info);
+let drone_info = JSON.parse('{"host":"gcs.iotocean.org","drone":"drone1","gcs":"KETI_MUV","type":"pixhawk","system_id":251,"update":"disable","mission":{"msw_lx_cam":{"container":["Capture_Status","Geotag_Status","Send_Status","Captured_GPS"],"sub_container":["Capture"],"git":"https://github.com/IoTKETI/msw_lx_cam.git"}},"id":"JWS"}');
 let drone_name = drone_info.drone;
 let host = drone_info.host;
 
@@ -26,7 +27,7 @@ let lib_mqtt_client = null;
 let my_status_topic = '';
 let control_topic = '';
 
-let status = 'Init';
+let status = 'Start';
 let count = 0;
 let external_memory = '/media/pi/';
 let copyable = false;
