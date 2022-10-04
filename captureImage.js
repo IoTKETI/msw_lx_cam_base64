@@ -49,7 +49,7 @@ function init() {
     control_topic = '/MUV/control/' + lib["name"] + '/' + lib["control"][0];
     my_status_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][0];
     captured_position_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][3];
-    gpi_topic = '/MUV/control/' + lib['name'] + '/gpi';
+    gpi_topic = '/TELE/drone/gpi';
 
     lib_mqtt_connect('localhost', 1883, gpi_topic, control_topic);
 
