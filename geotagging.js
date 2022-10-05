@@ -8,6 +8,7 @@ const moment = require("moment");
 const {nanoid} = require("nanoid");
 const mqtt = require("mqtt");
 const db = require('node-localdb');
+const {exec} = require("child_process");
 
 let gps_filename = db('./gps_filename.json');
 
@@ -24,24 +25,114 @@ let geotagged_position_topic = '';
 let status = 'Init';
 let count = 0;
 
-let external_memory = '/media/pi/';
+let external_memory = '/mnt/usb';
+let memFormat = 'vfat';
+
+let pw = "raspberry";
 let dir_name = '';
 
 let copyable = false;
 
 const checkUSB = new Promise((resolve, reject) => {
     // 외장 메모리 존재 여부 확인
-    fs.readdirSync(external_memory, {withFileTypes: true}).forEach(p => {
-        let dir = p.name;
-        if (p.isDirectory()) {
-            external_memory = external_memory + dir;
-            console.log('외장 메모리 : ' + dir);
-            copyable = true;
-            return;
+    exec("echo " + pw + " | sudo -S fdisk -l | grep sda", (error, stdout, stderr) => {
+        if (error) {
+            console.log('[getUSB] error:', error);
+            reject(error);
+        }
+        if (stdout) {
+            console.log('[getUSB] stdout: ' + stdout);
+            if (stdout.includes('sda')) {
+                let memoryList = stdout.split('\n');
+                memoryList.forEach(mem => {
+                    if (mem.includes('sda1')) {
+                        let memoryInfo = mem.split(' ');
+                        let memPath = memoryInfo[0];
+                        if (memoryInfo[memoryInfo.length - 2] === 'FAT32') {
+                            memFormat = 'vfat';
+                        } else if (memoryInfo[memoryInfo.length - 2] === 'HPFS/NTFS/exFAT') {
+                            memFormat = 'ntfs';
+                        }
+                        setUSB(memPath, memFormat).then(res => {
+                            resolve(res);
+                        }).catch(error => {
+                            reject(error);
+                        });
+                    }
+                });
+            }
+        }
+        if (stderr) {
+            console.log('[getUSB] stderr: ' + stderr);
+            reject(stderr);
         }
     });
-    resolve('finish');
 });
+
+function crtDir(dir) {
+    return new Promise((resolve, reject) => {
+        exec("echo " + pw + " | sudo -S mkdir " + dir, (error, stdout, stderr) => {
+            if (error) {
+                if (!(error.toString().includes('File exists'))) {
+                    console.log('[crtDir] error:', error);
+                    reject(error);
+                }
+            }
+            if (stdout) {
+                console.log('[crtDir] stdout:', stdout);
+            }
+            if (stderr) {
+                if (stderr.includes('File exists')) {
+                    console.log('Already [ ' + dir + ' ] exists');
+                    resolve('finish');
+                } else {
+                    console.log('[crtDir] stderr:', stderr);
+                    reject(stderr);
+                }
+            }
+        });
+        resolve('finish');
+    });
+}
+
+function setUSB(path, format) {
+    return new Promise((resolve, reject) => {
+        // !fs.existsSync(external_memory) && fs.mkdirSync(external_memory);
+        crtDir(external_memory).then(() => {
+            console.log('Create Directory [ ' + external_memory + ' ]');
+            exec("echo " + pw + " | sudo -S mount -t " + format + " " + path + " " + external_memory, (error, stdout, stderr) => {
+                if (error) {
+                    if (error.toString().includes('already mounted')) {
+                        copyable = true;
+                        resolve('finish');
+                    } else {
+                        console.log('[setUSB] error:', error);
+                        reject(error);
+                    }
+                }
+                if (stdout) {
+                    console.log('[setUSB] stdout:', stdout);
+                }
+                if (stderr) {
+                    if (stderr.toString().includes('already mounted')) {
+                        copyable = true;
+                        resolve('finish');
+                    } else {
+                        console.log('[setUSB] stderr:', stderr);
+                        reject(stderr);
+                    }
+                } else {
+                    copyable = true;
+                    resolve('finish');
+                }
+            });
+            // copyable = true;
+            // resolve('finish');
+        }).catch((error) => {
+            reject(error);
+        });
+    });
+}
 
 init();
 
@@ -57,7 +148,7 @@ function init() {
         lib.name = my_lib_name;
         lib.target = 'armv7l';
         lib.description = "[name]";
-        lib.scripts = "./lib_lx_cam.js";
+        lib.scripts = "node ./geotagging.js";
         lib.data = ["Capture_Status", "Geotag_Status", "Send_Status", "Captured_GPS", "Geotagged_GPS"];
         lib.control = ['Capture'];
 
@@ -70,12 +161,12 @@ function init() {
     lib_mqtt_connect('localhost', 1883);
 
     let dirName_flag = false;
-    checkUSB.then((result) => {
-        if (result === 'finish') {
-            if (copyable) {
-                dir_name = moment().format('YYYY-MM-DDTHH')
-                console.log(external_memory)
-                fs.readdirSync(external_memory, {withFileTypes: true}).forEach(p => {
+    checkUSB.then(() => {
+        if (copyable) {
+            dir_name = moment().format('YYYY-MM-DDTHH');
+            try {
+                let files = fs.readdirSync(external_memory, {withFileTypes: true});
+                files.forEach(p => {
                     let dir = p.name;
                     if (dir === dir_name) {
                         if (p.isDirectory()) {
@@ -86,18 +177,39 @@ function init() {
                         }
                     }
                 });
+            } catch (e) {
+                console.log(e)
+                let files = fs.readdirSync(external_memory, {withFileTypes: true});
+                files.forEach(p => {
+                    let dir = p.name;
+                    if (dir === dir_name) {
+                        if (p.isDirectory()) {
+                            external_memory = external_memory + '/' + dir;
+                            console.log('외장 메모리 경로 : ' + external_memory);
+                            dirName_flag = true;
+                            return;
+                        }
+                    }
+                });
+            }
 
-                if (!dirName_flag) {
-                    external_memory = external_memory + '/' + dir_name;
-                    fs.mkdirSync(external_memory);
+            if (!dirName_flag) {
+                external_memory = external_memory + '/' + dir_name;
+                // fs.mkdirSync(external_memory);
+                crtDir(external_memory).then(() => {
                     console.log('Create directory ---> ' + external_memory);
-                }
+                }).catch((error) => {
+                    console.log('Fail to create [ ' + external_memory + ' ]\n' + error);
+                })
             }
         }
-    });
 
-    geotag_image();
-    console.time('[Geo]Finish')
+        setTimeout(geotag_image, 100);
+    }).catch((error) => {
+        console.log(error);
+
+        setTimeout(geotag_image, 100);
+    });
 }
 
 function lib_mqtt_connect(broker_ip, port) {
